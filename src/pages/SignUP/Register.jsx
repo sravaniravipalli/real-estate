@@ -22,7 +22,7 @@ const Register = () => {
   useTitle("Register");
   const handleRegister = (data) => {
     setSignUpError("");
-    createUser(data.email, data.password)
+    createUser(data.email, data.password, data.username)
       .then((result) => {
         const user = result.user;
         console.log(user);

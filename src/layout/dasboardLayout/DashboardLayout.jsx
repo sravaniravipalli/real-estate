@@ -1,4 +1,4 @@
-import DashboardFooter from "components/dashboard/dashboardFooter/dashboardFooter";
+import DashboardFooter from "components/dashboard/dashboardFooter/DashboardFooter";
 import Navbar from "components/navbar/Navbar";
 import { Outlet } from "react-router-dom";
 

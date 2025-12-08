@@ -7,6 +7,8 @@ import { Link, useLocation } from "react-router-dom";
 const navigation = [
   { name: "Home", href: "/" },
   { name: "Properties", href: "/properties" },
+  { name: "Videos", href: "/videos" },
+  { name: "Price Prediction", href: "/price-prediction" },
   { name: "Blogs", href: "/blog" },
   { name: "FAQ", href: "/faq" },
 ];
@@ -14,6 +16,8 @@ const navigation = [
 const navigationWithDashboard = [
   { name: "Home", href: "/" },
   { name: "Properties", href: "/properties" },
+  { name: "Videos", href: "/videos" },
+  { name: "Price Prediction", href: "/price-prediction" },
   { name: "Blogs", href: "/blog" },
   { name: "FAQ", href: "/faq" },
   { name: "Dashboard", href: "/dashboard" },
@@ -73,11 +77,16 @@ export default function Navbar() {
                 ))}
           </div>
           {user?.uid ? (
-            <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+            <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-[#7C6EE4]">
+                  👤 {user.displayName || user.email?.split('@')[0]}
+                </span>
+              </div>
               <button
                 onClick={logOut}
                 type="button"
-                className="text-sm uppercase leading-6 text-gray-900"
+                className="text-sm uppercase leading-6 text-gray-900 hover:text-[#7C6EE4] transition"
               >
                 Logout
               </button>
@@ -86,7 +95,7 @@ export default function Navbar() {
             <div className="hidden lg:flex lg:flex-1 lg:justify-end">
               <Link
                 to="/login"
-className={`text-sm uppercase leading-6 text-gray-900 ${isActive("/login")}`}
+                className={`text-sm uppercase leading-6 text-gray-900 ${isActive("/login")}`}
               >
                 Log in
               </Link>

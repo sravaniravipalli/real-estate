@@ -13,6 +13,8 @@ import BlogDetail from "components/blog/BlogDetail";
 import PrivacyPolicyPage from "components/privacyPolicyPage/PrivacyPolicyPage";
 import TermsOfServicePage from "components/TermsOfServicePage/TermsOfServicePage";
 import Login from "pages/SignUP/Login";
+import PropertyVideos from "pages/propertyVideos/PropertyVideos";
+import PricePrediction from "pages/pricePrediction/PricePrediction";
 
 export const router = createBrowserRouter([
   {
@@ -29,8 +31,16 @@ export const router = createBrowserRouter([
         element: <Properties />,
       },
       {
+        path: "/videos",
+        element: <PropertyVideos />,
+      },
+      {
+        path: "/price-prediction",
+        element: <PricePrediction />,
+      },
+      {
         path: "/blog",
-        element: <Blog/>
+        element: <Blog />,
       },
       {
         path: "/blog/:_id",
@@ -64,7 +74,7 @@ export const router = createBrowserRouter([
     errorElement: <NotFound />,
     children: [
       {
-        path: "/dashboard",
+        path: "",
         element: (
           <PrivateRoute>
             <PropertyForm />
