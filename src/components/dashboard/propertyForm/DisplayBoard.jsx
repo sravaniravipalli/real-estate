@@ -28,13 +28,11 @@ export default function DisplayBoard({ propertyData, loading, jsxData, setJsxDat
     // save to db
     savePropertyToDb(data)
       .then((data) => {
-        console.log(data);
         if (data?.data.acknowledged) {
           toast.success("Data saved Successfully");
         }
       })
       .catch((err) => {
-        console.log(err.message);
         toast.error(err.message);
       });
   }
@@ -54,11 +52,10 @@ export default function DisplayBoard({ propertyData, loading, jsxData, setJsxDat
     const data = { features: createdText, image: imageUrl };
     generateSocialMediaPoster(data)
       .then((data) => {
-        console.log(data?.data);
         setJsxData(data?.data);
         setMediaLoading(false);
       }).catch((err) => {
-        console.log(err.message);
+        // Handle error gracefully
         setMediaLoading(false);
       })
   };

@@ -77,7 +77,7 @@ export default function Form({ setPropertyData, setLoading, setJsxData }) {
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err?.message);
+        // Handle error gracefully
         setLoading(false);
       });
   };

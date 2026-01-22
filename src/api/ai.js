@@ -21,7 +21,7 @@ export const fetchProducts = async () => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.log("Using mock properties:", error);
+    // Using mock properties as fallback
     return { data: mockProperties };
   }
 };

@@ -26,7 +26,7 @@ export default function Properties() {
         setIsLoading(false);
       })
       .catch((error) => {
-        console.log(error);
+        // Handle error gracefully
         setIsLoading(false);
       });
   }, []);

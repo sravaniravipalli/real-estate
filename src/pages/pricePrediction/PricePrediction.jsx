@@ -31,7 +31,7 @@ export default function PricePrediction() {
       setPrediction(data.predicted_price);
     } catch (err) {
       setError(err.message || 'An error occurred while predicting price');
-      console.error('Prediction error:', err);
+      // Error already captured in error state
     } finally {
       setLoading(false);
     }

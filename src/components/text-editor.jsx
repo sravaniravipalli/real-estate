@@ -33,12 +33,8 @@ const TextEditor = () => {
   ];
 
   const handleChange = (value) => {
-    console.log('🛑 ~ handleChange ~ value:', value);
-
     setText(value);
   };
-
-  console.log(text);
 
   return (
     <div>

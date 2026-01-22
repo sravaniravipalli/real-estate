@@ -28,7 +28,6 @@ export default function Login() {
     signIn(data.email, data.password)
       .then((result) => {
         const user = result.user;
-        console.log(user);
         toast("Log In Successful 👍", {
           style: {
             border: "1px solid #ffffff",
@@ -39,7 +38,6 @@ export default function Login() {
         reset();
       })
       .catch((err) => {
-        console.log(err.message);
         setPasswordError(err.message);
         setLogInError(err.message);
       });
@@ -50,7 +48,6 @@ export default function Login() {
     providerLogin(googleProvider)
       .then((result) => {
         const user = result.user;
-        console.log(user);
         toast("Log In Successful 👍", {
           style: {
             border: "1px solid #ffffff",
@@ -67,7 +64,6 @@ export default function Login() {
     providerLogin(githubProvider)
       .then((result) => {
         const user = result.user;
-        console.log(user);
         toast("Log In Successful 👍", {
           style: {
             border: "1px solid #ffffff",
@@ -76,7 +72,9 @@ export default function Login() {
         });
         navigate(from, { replace: true });
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        // Handle Github sign in error
+      });
   };
 
   return (
