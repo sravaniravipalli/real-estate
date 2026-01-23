@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function PredictionResult({ price }) {
   const formattedPrice = new Intl.NumberFormat('en-IN', {
     style: 'currency',

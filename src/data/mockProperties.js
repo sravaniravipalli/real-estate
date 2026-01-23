@@ -1,7 +1,7 @@
 export const mockProperties = [
   {
     _id: "1",
-    userName: "sravani ravipalli",
+    userName: "Rajesh Mehta",
     description: "Luxurious 3BHK apartment in Bandra, Mumbai with modern amenities, sea-facing balcony, and premium location near metro station. Perfect for investment.",
     propertyImage: "https://images.unsplash.com/photo-1545324418-cc1a24bed78e?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3571467/3571467-sd_640_360_30fps.mp4",
@@ -17,7 +17,7 @@ export const mockProperties = [
   },
   {
     _id: "2",
-    userName: "sravani ravipalli",
+    userName: "Priya Sharma",
     description: "Beautiful 2BHK villa in Gurgaon with spacious garden, modern kitchen, and excellent connectivity. Ready to move.",
     propertyImage: "https://images.unsplash.com/photo-1570129477492-45af003313e7?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718444/3718444-sd_640_360_30fps.mp4",
@@ -33,7 +33,7 @@ export const mockProperties = [
   },
   {
     _id: "3",
-    userName: "sravani ravipalli",
+    userName: "Arun Kumar",
     description: "Modern 4BHK penthouse in Koramangala with smart home features, gym, and swimming pool. Perfect for tech professionals.",
     propertyImage: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3555632/3555632-sd_640_360_30fps.mp4",
@@ -49,7 +49,7 @@ export const mockProperties = [
   },
   {
     _id: "4",
-    userName: "sravani ravipalli",
+    userName: "Kavya Reddy",
     description: "Spacious 3BHK flat in Hitech City with modern amenities, power backup, and 24/7 security. Prime location near business district.",
     propertyImage: "https://images.unsplash.com/photo-1493857671505-72967e2e2760?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3571470/3571470-sd_640_360_30fps.mp4",
@@ -65,7 +65,7 @@ export const mockProperties = [
   },
   {
     _id: "5",
-    userName: "sravani ravipalli",
+    userName: "Vikram Deshmukh",
     description: "Eco-friendly 2BHK apartment in Hinjewadi with rooftop garden, parking, and community facilities. Close to IT companies.",
     propertyImage: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3624340/3624340-sd_640_360_25fps.mp4",
@@ -81,7 +81,7 @@ export const mockProperties = [
   },
   {
     _id: "6",
-    userName: "sravani ravipalli",
+    userName: "Lakshmi Iyer",
     description: "Stunning beachfront villa in ECR Chennai with private beach access, infinity pool, and ocean views. Luxury living at its best.",
     propertyImage: "https://images.unsplash.com/photo-1580587771525-78991c38b53d?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3625021/3625021-sd_640_360_30fps.mp4",
@@ -97,7 +97,7 @@ export const mockProperties = [
   },
   {
     _id: "7",
-    userName: "sravani ravipalli",
+    userName: "Sourav Banerjee",
     description: "Classic 3BHK heritage property in South Kolkata with original wooden floors, high ceilings, and architectural charm.",
     propertyImage: "https://images.unsplash.com/photo-1512207736139-e3a97e0d4cbf?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3571476/3571476-sd_640_360_30fps.mp4",
@@ -113,7 +113,7 @@ export const mockProperties = [
   },
   {
     _id: "8",
-    userName: "sravani ravipalli",
+    userName: "Arjun Singh Rathore",
     description: "Royal 5BHK mansion in Jaipur with traditional Rajasthani architecture, large courtyards, and heritage gardens.",
     propertyImage: "https://images.unsplash.com/photo-1509644851169-569e0def3e3f?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3571471/3571471-sd_640_360_30fps.mp4",
@@ -129,7 +129,7 @@ export const mockProperties = [
   },
   {
     _id: "9",
-    userName: "sravani ravipalli",
+    userName: "Neha Patel",
     description: "Contemporary 2BHK flat in Satellite Ahmedabad with modern amenities, community center, and excellent schools nearby.",
     propertyImage: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718443/3718443-sd_640_360_30fps.mp4",
@@ -145,7 +145,7 @@ export const mockProperties = [
   },
   {
     _id: "10",
-    userName: "sravani ravipalli",
+    userName: "Amit Verma",
     description: "Charming 3BHK in Gomti Nagar with spacious rooms, garden, and proximity to shopping centers and hospitals.",
     propertyImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718452/3718452-sd_640_360_30fps.mp4",
@@ -161,7 +161,7 @@ export const mockProperties = [
   },
   {
     _id: "11",
-    userName: "sravani ravipalli",
+    userName: "Simran Kaur",
     description: "Ultra-modern 2BHK apartment in Sector 35 with smart home technology, gym, and parking. Planned city living.",
     propertyImage: "https://images.unsplash.com/photo-1573353471844-f049cf1957f9?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3555638/3555638-sd_640_360_30fps.mp4",
@@ -177,7 +177,7 @@ export const mockProperties = [
   },
   {
     _id: "12",
-    userName: "sravani ravipalli",
+    userName: "Deepak Menon",
     description: "Elegant 3BHK villa in Fort Kochi with backwater views, teak wood interiors, and traditional Kerala architecture.",
     propertyImage: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3624335/3624335-sd_640_360_25fps.mp4",
@@ -193,7 +193,7 @@ export const mockProperties = [
   },
   {
     _id: "13",
-    userName: "sravani ravipalli",
+    userName: "Anjali Joshi",
     description: "Spacious 3BHK apartment in South Indore with modern amenities, 24/7 security, and proximity to schools.",
     propertyImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718434/3718434-sd_640_360_30fps.mp4",
@@ -209,7 +209,7 @@ export const mockProperties = [
   },
   {
     _id: "14",
-    userName: "sravani ravipalli",
+    userName: "Rahul Gupta",
     description: "Modern 2BHK flat near Arera Colony with contemporary design, parking, and excellent connectivity.",
     propertyImage: "https://images.unsplash.com/photo-1460672490054-e5a4a670c359?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718440/3718440-sd_640_360_30fps.mp4",
@@ -225,7 +225,7 @@ export const mockProperties = [
   },
   {
     _id: "15",
-    userName: "sravani ravipalli",
+    userName: "Kiran Shah",
     description: "Premium 4BHK villa in Diamond City with luxury amenities, swimming pool, and garden. Investment opportunity.",
     propertyImage: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718450/3718450-sd_640_360_30fps.mp4",
@@ -241,7 +241,7 @@ export const mockProperties = [
   },
   {
     _id: "16",
-    userName: "sravani ravipalli",
+    userName: "Rohan Nair",
     description: "Stunning 3BHK apartment in Whitefield Bangalore with premium finishes, dedicated parking, and community amenities.",
     propertyImage: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718441/3718441-sd_640_360_30fps.mp4",
@@ -257,7 +257,7 @@ export const mockProperties = [
   },
   {
     _id: "17",
-    userName: "sravani ravipalli",
+    userName: "Pooja Kulkarni",
     description: "Luxurious 5BHK bungalow in Boat Club Road Pune with lush gardens, modern kitchen, and entertainment zones.",
     propertyImage: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718449/3718449-sd_640_360_30fps.mp4",
@@ -273,7 +273,7 @@ export const mockProperties = [
   },
   {
     _id: "18",
-    userName: "sravani ravipalli",
+    userName: "Sandeep Malhotra",
     description: "Sleek 2BHK apartment in Andheri with modern interiors, gym, and close proximity to Western Express Highway.",
     propertyImage: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718437/3718437-sd_640_360_30fps.mp4",
@@ -289,7 +289,7 @@ export const mockProperties = [
   },
   {
     _id: "19",
-    userName: "sravani ravipalli",
+    userName: "Meera Reddy",
     description: "Premium 4BHK villa in Vikasnagar Hyderabad with smart home technology, swimming pool, and scenic views.",
     propertyImage: "https://images.unsplash.com/photo-1520763185298-1b434c919abe?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718433/3718433-sd_640_360_30fps.mp4",
@@ -305,7 +305,7 @@ export const mockProperties = [
   },
   {
     _id: "20",
-    userName: "sravani ravipalli",
+    userName: "Karthik Rao",
     description: "Charming 3BHK villa in Indiranagar Bangalore with spacious balconies, garden, and excellent neighborhood.",
     propertyImage: "https://images.unsplash.com/photo-1540932424986-b8d776e13cc2?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718448/3718448-sd_640_360_30fps.mp4",
@@ -321,7 +321,7 @@ export const mockProperties = [
   },
   {
     _id: "21",
-    userName: "sravani ravipalli",
+    userName: "Vivek Kapoor",
     description: "Exquisite 4BHK apartment in Mumbai Central with premium location, high-speed elevators, and concierge service.",
     propertyImage: "https://images.unsplash.com/photo-1501818712409-f73b0fd44d82?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3571467/3571467-sd_640_360_30fps.mp4",
@@ -337,7 +337,7 @@ export const mockProperties = [
   },
   {
     _id: "22",
-    userName: "sravani ravipalli",
+    userName: "Sneha Khanna",
     description: "Modern 3BHK villa in Gurgaon Sector 57 with contemporary design, large terrace, and community facilities.",
     propertyImage: "https://images.unsplash.com/photo-1513581578314-31f3de6e815b?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718451/3718451-sd_640_360_30fps.mp4",
@@ -353,7 +353,7 @@ export const mockProperties = [
   },
   {
     _id: "23",
-    userName: "sravani ravipalli",
+    userName: "Gaurav Sinha",
     description: "Beautiful 2BHK apartment in Noida Sector 62 with modern furnishings, dedicated parking, and 24x7 security.",
     propertyImage: "https://images.unsplash.com/photo-1604070945541-0d4ac8b22ba7?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718436/3718436-sd_640_360_30fps.mp4",
@@ -369,7 +369,7 @@ export const mockProperties = [
   },
   {
     _id: "24",
-    userName: "sravani ravipalli",
+    userName: "Aarti Patil",
     description: "Stylish 3BHK villa in Viman Nagar Pune with open layout, modular kitchen, and rooftop access.",
     propertyImage: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718438/3718438-sd_640_360_30fps.mp4",
@@ -385,7 +385,7 @@ export const mockProperties = [
   },
   {
     _id: "25",
-    userName: "sravani ravipalli",
+    userName: "Sanjay Reddy",
     description: "Lavish 5BHK mansion in Banjara Hills Hyderabad with landscaped garden, home theater, and infinity pool.",
     propertyImage: "https://images.unsplash.com/photo-1471922694729-a0e1ce0b74fe?w=400&h=300&fit=crop",
     propertyVideo: "https://videos.pexels.com/video-files/3718445/3718445-sd_640_360_30fps.mp4",
