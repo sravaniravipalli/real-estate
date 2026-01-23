@@ -138,34 +138,50 @@ export default function AddPropertyForm() {
     setLoading(true);
 
     try {
-      const formDataToSend = new FormData();
+      // Create property object for localStorage
+      const propertyData = {
+        _id: `local-${Date.now()}`,
+        userName: "Current User", // You can get this from auth context
+        title: formData.title,
+        description: formData.description,
+        propertyImage: imagePreviews[0] || "https://via.placeholder.com/400x300?text=Property",
+        propertyVideo: videoPreviews[0] || "",
+        videoThumbnail: imagePreviews[0] || "",
+        videoDuration: "0:00",
+        videoViews: 0,
+        videoType: "property-tour",
+        valuationCost: `₹${parseInt(formData.price).toLocaleString('en-IN')}`,
+        location: formData.state,
+        bedrooms: parseInt(formData.bedrooms),
+        bathrooms: parseInt(formData.bathrooms),
+        area: `${formData.squareFootage} sqft`,
+        propertyType: formData.propertyType,
+        condition: formData.condition,
+        features: formData.features,
+        address: {
+          street: formData.streetAddress,
+          city: formData.city,
+          state: formData.state,
+          zipcode: formData.zipcode
+        },
+        yearBuilt: formData.yearBuilt || "",
+        lotSize: formData.lotSize || "",
+        images: imagePreviews,
+        videos: videoPreviews,
+        createdAt: new Date().toISOString()
+      };
+
+      // Get existing properties from localStorage
+      const existingProperties = JSON.parse(localStorage.getItem('userProperties') || '[]');
       
-      // Add form fields
-      Object.keys(formData).forEach((key) => {
-        formDataToSend.append(key, formData[key]);
-      });
-
-      // Add images
-      images.forEach((image, index) => {
-        formDataToSend.append(`images`, image);
-      });
-
-      // Add videos
-      videos.forEach((video, index) => {
-        formDataToSend.append(`videos`, video);
-      });
-
-      // Send to backend (update the endpoint as needed)
-      const response = await fetch("/api/properties/add", {
-        method: "POST",
-        body: formDataToSend,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to add property");
-      }
+      // Add new property
+      existingProperties.push(propertyData);
+      
+      // Save back to localStorage
+      localStorage.setItem('userProperties', JSON.stringify(existingProperties));
 
       setSuccess(true);
+      
       // Reset form
       setFormData({
         title: "",
