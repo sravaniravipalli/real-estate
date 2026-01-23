@@ -1,3 +1,4 @@
+// JSX Component
 export default function Pagination({ currentPage, pageCount, onPageChange }) {
   return (
     <div className="flex justify-center space-x-1 dark:text-gray-100 mt-10">

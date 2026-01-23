@@ -10,7 +10,7 @@ try {
   const app = require("context/firebase/firebase.config").default;
   auth = require("firebase/auth").getAuth(app);
 } catch (error) {
-  console.log("Firebase not initialized, using mock auth");
+  // Firebase not initialized, using mock auth for development
   auth = null;
 }
 
@@ -159,7 +159,6 @@ const AuthProvider = ({ children }) => {
         const unsubscribe = require("firebase/auth").onAuthStateChanged(
           auth,
           (currentUser) => {
-            console.log("user observing");
             setUser(currentUser);
             setLoading(false);
           }

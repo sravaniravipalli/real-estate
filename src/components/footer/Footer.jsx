@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import NewsletterSubscribe from "./NewsletterSubscribe ";
+import NewsletterSubscribe from "./NewsletterSubscribe";
 
 export default function Footer() {
   return (

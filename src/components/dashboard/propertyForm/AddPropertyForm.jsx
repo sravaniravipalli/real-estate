@@ -192,10 +192,9 @@ export default function AddPropertyForm() {
 
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
-      console.error("Error:", error);
       setErrors((prev) => ({
         ...prev,
-        submit: error.message,
+        submit: error.message || "Failed to submit property. Please try again.",
       }));
     } finally {
       setLoading(false);

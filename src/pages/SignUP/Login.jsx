@@ -56,7 +56,9 @@ export default function Login() {
         });
         navigate(from, { replace: true });
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        toast.error("Login failed. Please try again.");
+      });
   };
 
   // register with Github

@@ -1,3 +1,4 @@
+// JSX Component
 export default function HeroTwo() {
   return (
     <div className="w-full bg-center bg-cover h-[38rem] bg-white" style={{ backgroundImage: 'url("../src/assets/bg/black-white.jpg")'}}>

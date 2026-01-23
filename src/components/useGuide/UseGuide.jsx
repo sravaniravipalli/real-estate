@@ -1,3 +1,4 @@
+// JSX Component
 export default function UseGuide() {
   return (
     <section className="bg-[url('/assets/images/about.png')] bg-fixed bg-no-repeat bg-cover bg-center py-8 lg:py-20">

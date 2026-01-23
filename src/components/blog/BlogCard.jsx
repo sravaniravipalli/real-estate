@@ -1,3 +1,4 @@
+// JSX Component
 export default function BlogCard({ blog }) {
   const { image, title, content, author, date } = blog;
   return (

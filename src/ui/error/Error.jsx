@@ -1,3 +1,4 @@
+// JSX Component
 export default function Error() {
   return (
     <section>
