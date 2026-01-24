@@ -119,7 +119,7 @@ export default function AnalyticsDashboard() {
         {/* Location Analysis */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <MapPinIcon className="w-5 h-5 text-green-600" />
+            <span className="text-green-600">📍</span>
             Top Locations
           </h3>
 

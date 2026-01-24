@@ -74,7 +74,7 @@ export default function WishlistDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-2">
-            <HeartIcon className="w-8 h-8 text-red-600 fill-red-600" />
+            <span className="text-4xl">❤️</span>
             My Wishlist
           </h2>
           <p className="text-gray-600">Your saved properties ({wishlist.length})</p>

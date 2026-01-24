@@ -31,10 +31,18 @@ export const fetchProducts = async () => {
       15000 // 15 second timeout
     );
     const data = await response.json();
-    return data;
+    
+    // Merge with user-added properties from localStorage
+    const userProperties = JSON.parse(localStorage.getItem('userProperties') || '[]');
+    const allProperties = [...userProperties, ...data.data];
+    
+    return { data: allProperties };
   } catch (error) {
-    // Using mock properties as fallback
-    return { data: mockProperties };
+    // Using mock properties + user properties as fallback
+    const userProperties = JSON.parse(localStorage.getItem('userProperties') || '[]');
+    const allProperties = [...userProperties, ...mockProperties];
+    
+    return { data: allProperties };
   }
 };
 
