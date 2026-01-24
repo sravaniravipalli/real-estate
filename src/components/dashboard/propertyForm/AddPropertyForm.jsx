@@ -150,7 +150,7 @@ export default function AddPropertyForm() {
         videoDuration: "0:00",
         videoViews: 0,
         videoType: "property-tour",
-        valuationCost: `₹${parseInt(formData.price).toLocaleString('en-IN')}`,
+        valuationCost: `₹${(parseInt(formData.price) || 0).toLocaleString('en-IN')}`,
         location: formData.state,
         bedrooms: parseInt(formData.bedrooms),
         bathrooms: parseInt(formData.bathrooms),
@@ -365,6 +365,7 @@ export default function AddPropertyForm() {
                       value={formData.price}
                       onChange={handleInputChange}
                       placeholder="Property Price"
+                      min="0"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.price && <p className="mt-1 text-red-500 text-sm">{errors.price}</p>}
@@ -378,6 +379,8 @@ export default function AddPropertyForm() {
                       value={formData.bedrooms}
                       onChange={handleInputChange}
                       placeholder="Number of Bedrooms"
+                      min="0"
+                      max="50"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.bedrooms && <p className="mt-1 text-red-500 text-sm">{errors.bedrooms}</p>}
@@ -392,6 +395,8 @@ export default function AddPropertyForm() {
                       onChange={handleInputChange}
                       placeholder="Number of Bathrooms"
                       step="0.5"
+                      min="0"
+                      max="50"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.bathrooms && <p className="mt-1 text-red-500 text-sm">{errors.bathrooms}</p>}
@@ -405,6 +410,7 @@ export default function AddPropertyForm() {
                       value={formData.squareFootage}
                       onChange={handleInputChange}
                       placeholder="Square Feet"
+                      min="1"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.squareFootage && <p className="mt-1 text-red-500 text-sm">{errors.squareFootage}</p>}
@@ -430,6 +436,8 @@ export default function AddPropertyForm() {
                       value={formData.yearBuilt}
                       onChange={handleInputChange}
                       placeholder="Year"
+                      min="1800"
+                      max="2026"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -538,6 +546,7 @@ export default function AddPropertyForm() {
                         <div key={index} className="relative group">
                           <video
                             src={preview}
+                            controls
                             className="w-full h-32 object-cover rounded-lg bg-black"
                           />
                           <button
@@ -564,7 +573,31 @@ export default function AddPropertyForm() {
                   {loading ? "🔄 Adding Property..." : "✅ Add Property"}
                 </button>
                 <button
-                  type="reset"
+                  type="button"
+                  onClick={() => {
+                    setFormData({
+                      title: "",
+                      description: "",
+                      streetAddress: "",
+                      city: "",
+                      state: "",
+                      zipcode: "",
+                      price: "",
+                      bedrooms: "",
+                      bathrooms: "",
+                      squareFootage: "",
+                      lotSize: "",
+                      yearBuilt: "",
+                      propertyType: "",
+                      condition: "",
+                      features: "",
+                    });
+                    setImages([]);
+                    setVideos([]);
+                    setImagePreviews([]);
+                    setVideoPreviews([]);
+                    setErrors({});
+                  }}
                   className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200"
                 >
                   🔄 Clear Form

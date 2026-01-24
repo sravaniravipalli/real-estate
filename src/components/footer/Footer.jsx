@@ -109,7 +109,7 @@ export default function Footer() {
           &copy; {new Date().getFullYear()} ReaEstateGenious. All rights reserved.
         </p>
         <p className="text-sm mt-2">
-          Powered by OpenAI | <a href="/privacy" className="text-[#a3a5a7] hover:text-gray-800"><Link to="/privacy">Privacy Policy</Link></a> | <a href="/terms" className="text-[#a3a5a7] hover:text-gray-800"><Link to="/term">Terms of Service</Link></a>
+          Powered by OpenAI | <Link to="/privacy" className="text-[#a3a5a7] hover:text-gray-800">Privacy Policy</Link> | <Link to="/terms" className="text-[#a3a5a7] hover:text-gray-800">Terms of Service</Link>
         </p>
       </div>
     </div>
