@@ -56,7 +56,7 @@ export default function Form({ setPropertyData, setLoading, setJsxData }) {
     return newErrors;
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
@@ -64,22 +64,67 @@ export default function Form({ setPropertyData, setLoading, setJsxData }) {
       return;
     }
 
-    const arr = Object.entries(formData);
-    const joinedArr = arr.map((pair) => pair.join(":"));
-    const finalPromptData = joinedArr.join("\n");
-    const prompt = { prompt: finalPromptData, size: "medium" };
     setJsxData(null);
     setLoading(true);
     
-    generatePropertyInfo(prompt)
-      .then((data) => {
-        setPropertyData(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        // Handle error gracefully
-        setLoading(false);
+    try {
+      // Option 1: Try backend ML prediction first
+      const mlPrediction = await fetch('http://localhost:5000/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bedrooms: parseInt(formData.numberOfBedrooms),
+          bathrooms: parseInt(formData.numberOfBathrooms),
+          livingArea: parseInt(formData.squareFootage),
+          condition: parseInt(formData.condition),
+          schoolsNearby: 2 // default
+        })
       });
+      
+      if (mlPrediction.ok) {
+        const mlData = await mlPrediction.json();
+        
+        // Then get AI-generated description
+        const arr = Object.entries(formData);
+        const joinedArr = arr.map((pair) => pair.join(":"));
+        const finalPromptData = joinedArr.join("\n");
+        const prompt = { prompt: finalPromptData, size: "medium" };
+        
+        const aiData = await generatePropertyInfo(prompt);
+        
+        // Combine ML price with AI description
+        setPropertyData({
+          ...aiData,
+          valuationCost: `$${mlData.predicted_price.toLocaleString()}`
+        });
+      } else {
+        throw new Error('ML prediction failed');
+      }
+    } catch (error) {
+      // Fallback: Use formula-based calculation
+      console.warn('Using fallback valuation calculation');
+      
+      const basePrice = 100000;
+      const bedroomValue = parseInt(formData.numberOfBedrooms) * 50000;
+      const bathroomValue = parseInt(formData.numberOfBathrooms) * 30000;
+      const areaValue = parseInt(formData.squareFootage) * 150;
+      const conditionMultiplier = parseInt(formData.condition) * 0.1 + 0.8;
+      
+      const estimatedPrice = Math.round(
+        (basePrice + bedroomValue + bathroomValue + areaValue) * conditionMultiplier
+      );
+      
+      // Generate mock property data
+      const mockData = {
+        createdText: `Beautiful ${formData.numberOfBedrooms} bedroom, ${formData.numberOfBathrooms} bathroom property located at ${formData.streetAddress}, ${formData.city}, ${formData.state}. This ${formData.squareFootage} sq ft home features ${formData.features}. Property condition: ${formData.condition}/5. Located in a ${formData.zoning} zone with ${formData.landUse} land use.`,
+        imageUrl: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
+        valuationCost: `$${estimatedPrice.toLocaleString()}`
+      };
+      
+      setPropertyData(mockData);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formInputStyles = "border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full transition-all duration-150";
