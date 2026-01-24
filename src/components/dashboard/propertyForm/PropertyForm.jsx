@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import DisplayBoard from "./DisplayBoard";
 import Form from "./Form";
 import AddPropertyForm from "./AddPropertyForm";
@@ -10,7 +11,16 @@ export default function PropertyForm() {
   const [propertyData, setPropertyData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [jsxData, setJsxData] = useState(null);
-  const [activeTab, setActiveTab] = useState("valuation");
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "add-property");
+
+  // Update active tab when URL changes
+  useEffect(() => {
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
 
   return (
     <div className="bg-fixed min-h-screen">
