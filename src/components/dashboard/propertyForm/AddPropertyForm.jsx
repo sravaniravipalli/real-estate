@@ -249,8 +249,9 @@ export default function AddPropertyForm() {
                 <h6 className="text-lg font-bold text-gray-700 mb-4">📋 Property Overview</h6>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Property Title *</label>
+                    <label htmlFor="prop-title" className="block text-gray-700 font-semibold mb-2">Property Title *</label>
                     <input
+                      id="prop-title"
                       type="text"
                       name="title"
                       value={formData.title}
@@ -262,8 +263,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Property Type *</label>
+                    <label htmlFor="prop-propertyType" className="block text-gray-700 font-semibold mb-2">Property Type *</label>
                     <select
+                      id="prop-propertyType"
                       name="propertyType"
                       value={formData.propertyType}
                       onChange={handleInputChange}
@@ -282,8 +284,9 @@ export default function AddPropertyForm() {
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-gray-700 font-semibold mb-2">Description *</label>
+                  <label htmlFor="prop-description" className="block text-gray-700 font-semibold mb-2">Description *</label>
                   <textarea
+                    id="prop-description"
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
@@ -300,8 +303,9 @@ export default function AddPropertyForm() {
                 <h6 className="text-lg font-bold text-gray-700 mb-4">📍 Location Information</h6>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Street Address *</label>
+                    <label htmlFor="prop-streetAddress" className="block text-gray-700 font-semibold mb-2">Street Address *</label>
                     <input
+                      id="prop-streetAddress"
                       type="text"
                       name="streetAddress"
                       value={formData.streetAddress}
@@ -313,8 +317,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">City *</label>
+                    <label htmlFor="prop-city" className="block text-gray-700 font-semibold mb-2">City *</label>
                     <input
+                      id="prop-city"
                       type="text"
                       name="city"
                       value={formData.city}
@@ -326,8 +331,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">State *</label>
+                    <label htmlFor="prop-state" className="block text-gray-700 font-semibold mb-2">State *</label>
                     <input
+                      id="prop-state"
                       type="text"
                       name="state"
                       value={formData.state}
@@ -339,8 +345,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Zip Code *</label>
+                    <label htmlFor="prop-zipcode" className="block text-gray-700 font-semibold mb-2">Zip Code *</label>
                     <input
+                      id="prop-zipcode"
                       type="text"
                       name="zipcode"
                       value={formData.zipcode}
@@ -358,8 +365,9 @@ export default function AddPropertyForm() {
                 <h6 className="text-lg font-bold text-gray-700 mb-4">🏠 Property Details</h6>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Price ($) *</label>
+                    <label htmlFor="prop-price" className="block text-gray-700 font-semibold mb-2">Price ($) *</label>
                     <input
+                      id="prop-price"
                       type="number"
                       name="price"
                       value={formData.price}
@@ -372,8 +380,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Bedrooms *</label>
+                    <label htmlFor="prop-bedrooms" className="block text-gray-700 font-semibold mb-2">Bedrooms *</label>
                     <input
+                      id="prop-bedrooms"
                       type="number"
                       name="bedrooms"
                       value={formData.bedrooms}
@@ -387,8 +396,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Bathrooms *</label>
+                    <label htmlFor="prop-bathrooms" className="block text-gray-700 font-semibold mb-2">Bathrooms *</label>
                     <input
+                      id="prop-bathrooms"
                       type="number"
                       name="bathrooms"
                       value={formData.bathrooms}
@@ -403,8 +413,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Square Footage *</label>
+                    <label htmlFor="prop-squareFootage" className="block text-gray-700 font-semibold mb-2">Square Footage *</label>
                     <input
+                      id="prop-squareFootage"
                       type="number"
                       name="squareFootage"
                       value={formData.squareFootage}
@@ -417,8 +428,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Lot Size</label>
+                    <label htmlFor="prop-lotSize" className="block text-gray-700 font-semibold mb-2">Lot Size</label>
                     <input
+                      id="prop-lotSize"
                       type="text"
                       name="lotSize"
                       value={formData.lotSize}
@@ -429,8 +441,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Year Built</label>
+                    <label htmlFor="prop-yearBuilt" className="block text-gray-700 font-semibold mb-2">Year Built</label>
                     <input
+                      id="prop-yearBuilt"
                       type="number"
                       name="yearBuilt"
                       value={formData.yearBuilt}
@@ -445,8 +458,9 @@ export default function AddPropertyForm() {
 
                 <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Condition *</label>
+                    <label htmlFor="prop-condition" className="block text-gray-700 font-semibold mb-2">Condition *</label>
                     <select
+                      id="prop-condition"
                       name="condition"
                       value={formData.condition}
                       onChange={handleInputChange}
@@ -462,8 +476,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Features</label>
+                    <label htmlFor="prop-features" className="block text-gray-700 font-semibold mb-2">Features</label>
                     <input
+                      id="prop-features"
                       type="text"
                       name="features"
                       value={formData.features}

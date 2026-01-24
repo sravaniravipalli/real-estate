@@ -56,10 +56,11 @@ export default function PropertyFilter({ onFilterChange }) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         {/* Location Filter */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="filter-location" className="block text-sm font-semibold text-gray-700 mb-2">
             Location
           </label>
           <select
+            id="filter-location"
             value={selectedLocation}
             onChange={(e) => setSelectedLocation(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7C6EE4]"
@@ -79,10 +80,11 @@ export default function PropertyFilter({ onFilterChange }) {
 
         {/* Min Price Filter */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="filter-minPrice" className="block text-sm font-semibold text-gray-700 mb-2">
             Min Price
           </label>
           <input
+            id="filter-minPrice"
             type="range"
             min="0"
             max="600000000"
@@ -98,10 +100,11 @@ export default function PropertyFilter({ onFilterChange }) {
 
         {/* Max Price Filter */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="filter-maxPrice" className="block text-sm font-semibold text-gray-700 mb-2">
             Max Price
           </label>
           <input
+            id="filter-maxPrice"
             type="range"
             min="0"
             max="600000000"
@@ -117,10 +120,11 @@ export default function PropertyFilter({ onFilterChange }) {
 
         {/* Bedrooms Filter */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label htmlFor="filter-bedrooms" className="block text-sm font-semibold text-gray-700 mb-2">
             Min Bedrooms
           </label>
           <select
+            id="filter-bedrooms"
             value={bedrooms}
             onChange={(e) => setBedrooms(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7C6EE4]"
