@@ -60,19 +60,13 @@ export default function PropertyVideoBrowser() {
                   <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                 </svg>
               </button>
-              <div className="absolute top-3 right-3 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs font-semibold">
-                {video.duration}
-              </div>
             </figure>
             <div className="card-body p-4">
               <h3 className="card-title text-base mb-2 line-clamp-2">{video.title}</h3>
               <p className="text-sm text-gray-600 mb-3 line-clamp-2">{video.description}</p>
-              <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
-                <span className="flex items-center gap-1">
-                  👁️ {video.views.toLocaleString()}
-                </span>
-                <span className="badge badge-sm badge-info">{video.type}</span>
-              </div>
+             <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
+  <span className="badge badge-sm badge-info">{video.type}</span>
+</div>
               <div className="card-actions justify-between items-center">
                 <span className="text-xs text-gray-400">
                   {new Date(video.uploadDate).toLocaleDateString()}
@@ -111,7 +105,6 @@ export default function PropertyVideoBrowser() {
               </div>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
                 <p className="text-white text-xs font-semibold line-clamp-1">{video.title}</p>
-                <p className="text-gray-300 text-xs">👁️ {video.views.toLocaleString()}</p>
               </div>
             </div>
           ))}
@@ -154,12 +147,10 @@ export default function PropertyVideoBrowser() {
                       </div>
                     <div className="text-sm text-gray-600">
                       <p className="mb-2">{video.description}</p>
-                      <div className="flex gap-4 flex-wrap">
-                        <span>⏱️ Duration: {video.duration}</span>
-                        <span>👁️ Views: {video.views.toLocaleString()}</span>
-                        <span>📅 {new Date(video.uploadDate).toLocaleDateString()}</span>
-                        <span className="badge badge-info">{video.type}</span>
-                      </div>
+                     <div className="flex gap-4 flex-wrap">
+  <span>📅 {new Date(video.uploadDate).toLocaleDateString()}</span>
+  <span className="badge badge-info">{video.type}</span>
+</div>
                     </div>
                   </div>
                 );

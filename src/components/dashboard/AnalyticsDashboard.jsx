@@ -8,9 +8,9 @@ export default function AnalyticsDashboard() {
   const analyticsData = {
     price: {
       title: "Price Distribution",
-      avg: "$450,000",
+      avg: "₹3,73,50,000",
       trend: "+12%",
-      data: ["$200K-$300K: 25 properties", "$300K-$400K: 45 properties", "$400K-$600K: 38 properties", "$600K+: 22 properties"]
+      data: ["₹1.66Cr-₹2.49Cr: 25 properties", "₹2.49Cr-₹3.32Cr: 45 properties", "₹3.32Cr-₹4.98Cr: 38 properties", "₹4.98Cr+: 22 properties"]
     },
     bedrooms: {
       title: "Bedroom Distribution",
@@ -27,15 +27,15 @@ export default function AnalyticsDashboard() {
   };
 
   const topLocations = [
-    { name: "Downtown", properties: 145, avgPrice: "$520K" },
-    { name: "Waterfront", properties: 98, avgPrice: "$680K" },
-    { name: "Suburbs", properties: 187, avgPrice: "$380K" },
-    { name: "Urban Center", properties: 156, avgPrice: "$450K" }
+    { name: "Downtown", properties: 145, avgPrice: "₹4,31,60,000" },
+    { name: "Waterfront", properties: 98, avgPrice: "₹5,64,40,000" },
+    { name: "Suburbs", properties: 187, avgPrice: "₹3,15,40,000" },
+    { name: "Urban Center", properties: 156, avgPrice: "₹3,73,50,000" }
   ];
 
   const marketInsights = [
     { label: "Total Properties", value: "2,450", icon: "🏠" },
-    { label: "Avg Price", value: "$450K", icon: "💰" },
+    { label: "Avg Price", value: "₹3.74Cr", icon: "💰" },
     { label: "New Listings", value: "124", icon: "📈" },
     { label: "Locations", value: "45", icon: "📍" }
   ];
@@ -66,7 +66,7 @@ export default function AnalyticsDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Metric Selection */}
           <div className="lg:col-span-1 bg-white rounded-lg shadow p-6">
-              Select Metric
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Select Metric</h3>
             <div className="space-y-3">
               {Object.entries(analyticsData).map(([key, value]) => (
                 <button

@@ -1,19 +1,55 @@
 // JSX Component
-export default function PropertiesCard({ product,setPropertyData }) {
+export default function PropertiesCard({ product, setPropertyData }) {
   const { userName, description, propertyImage, valuationCost } = product;
+  
+  // Use a working placeholder with proper protocol
+  const defaultImage = "https://placehold.co/400x300/e2e8f0/64748b?text=No+Image";
+  
+  // Function to fix Unsplash URLs and handle errors
+  const getImageUrl = () => {
+    if (!propertyImage || propertyImage.trim() === '') {
+      return defaultImage;
+    }
+    
+    // Fix Unsplash URLs - they need proper parameters
+    if (propertyImage.includes('unsplash.com')) {
+      // Extract the photo ID and rebuild the URL properly
+      const photoIdMatch = propertyImage.match(/photo-([a-zA-Z0-9_-]+)/);
+      if (photoIdMatch) {
+        const photoId = photoIdMatch[1];
+        // Use Unsplash's source API which is more reliable
+        return `https://source.unsplash.com/${photoId}/400x300`;
+      }
+    }
+    
+    return propertyImage;
+  };
+
+  console.log("Property image:", propertyImage);
+
   return (
     <div className="mx-auto w-full">
       <div className="shadow p-4 rounded-lg bg-white">
-        <div className=" rounded-lg overflow-hidden h-52">
+        <div className="rounded-lg overflow-hidden h-52">
           <div className="relative transition-transform duration-500 transform ease-in-out hover:scale-110 w-full">
             <img
-              src={propertyImage}
-              className="object-cover object-center w-full h-56"
-              alt=""
+              src={getImageUrl()}
+              onError={(e) => {
+                console.error("Image failed to load:", propertyImage);
+                // Prevent infinite loop
+                if (e.target.src !== defaultImage) {
+                  e.target.onerror = null;
+                  e.target.src = defaultImage;
+                }
+              }}
+              className="object-cover object-center w-full h-56 bg-gray-200"
+              alt={`Property - ${valuationCost || 'No price available'}`}
+              loading="lazy"
             />
-            <div className="absolute transition-opacity duration-500 ease-linear opacity-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -ms-transform text-center">
-              <div className="bg-primary text-white text-base px-8 py-4">
-                Jharna
+
+            <div className="absolute transition-opacity duration-500 ease-linear opacity-0 hover:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+              <div className="bg-primary text-white text-base px-8 py-4 rounded">
+                Sravani
               </div>
             </div>
           </div>
@@ -41,8 +77,8 @@ export default function PropertiesCard({ product,setPropertyData }) {
             {/* The button to open modal */}
             <label
               htmlFor="display-modal"
-              className="bg-primary text-white text-sm py-[10px] px-[8px] rounded hover:bg-gradient-to-r hover:from-blue-500 hover:to-[#7C6EE4] transition"
-              onClick={()=>setPropertyData(product)}
+              className="bg-primary text-white text-sm py-[10px] px-[8px] rounded hover:bg-gradient-to-r hover:from-blue-500 hover:to-[#7C6EE4] transition cursor-pointer"
+              onClick={() => setPropertyData(product)}
             >
               View Details
             </label>

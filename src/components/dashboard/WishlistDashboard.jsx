@@ -15,7 +15,7 @@ export default function WishlistDashboard() {
         bathrooms: 2,
         area: "2,400 sqft",
         location: "Downtown",
-        image: "https://via.placeholder.com/300x200?text=Downtown+Apt",
+        image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop",
         type: "apartment",
         addedDate: "2025-12-01"
       },
@@ -27,7 +27,7 @@ export default function WishlistDashboard() {
         bathrooms: 4,
         area: "5,600 sqft",
         location: "Waterfront",
-        image: "https://via.placeholder.com/300x200?text=Waterfront+Villa",
+        image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=300&fit=crop",
         type: "house",
         addedDate: "2025-11-28"
       },
@@ -39,7 +39,7 @@ export default function WishlistDashboard() {
         bathrooms: 1,
         area: "1,200 sqft",
         location: "Suburbs",
-        image: "https://via.placeholder.com/300x200?text=Suburban+Home",
+        image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop",
         type: "house",
         addedDate: "2025-11-25"
       }
@@ -114,6 +114,10 @@ export default function WishlistDashboard() {
                     src={property.image}
                     alt={property.title}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3Crect width="300" height="200" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="%236b7280"%3EProperty Image%3C/text%3E%3C/svg%3E';
+                    }}
                   />
                   <div className="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
                     {property.type.charAt(0).toUpperCase() + property.type.slice(1)}
@@ -152,7 +156,7 @@ export default function WishlistDashboard() {
                       onClick={() => shareProperty(property)}
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
                     >
-                      📤 Share
+                      🔤 Share
                     </button>
                     <button
                       onClick={() => removeFromWishlist(property.id)}
@@ -181,7 +185,7 @@ export default function WishlistDashboard() {
               </div>
               <div className="text-center">
                 <p className="text-gray-600 text-sm">Avg Price</p>
-                <p className="text-2xl font-bold text-red-600">$743K</p>
+                <p className="text-2xl font-bold text-red-600">₹6.17Cr</p>
               </div>
               <div className="text-center">
                 <p className="text-gray-600 text-sm">Avg Bedrooms</p>

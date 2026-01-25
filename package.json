@@ -58,5 +58,9 @@
     "tailwindcss": "^3.3.2",
     "vite": "^4.3.9",
     "vitest": "^1.0.4"
-  }
+  },
+  "description": "Welcome to the Real Estate AI Client Site repository - Empowering the real estate industry with accurate valuations, RealEstate property description and image generation powered by Open AI, social media posters generation, and PDF reports.\r ## Table of Contents\r - [RealEstateGenius](#realestategenius)\r   - [Table of Contents](#table-of-contents)\r   - [Live Site](#live-site)\r   - [Git Repositories](#git-repositories)\r   - [Instruction Video](#instruction-video)\r   - [Technologies](#technologies)\r   - [Introduction - The Project's Aim](#introduction---the-projects-aim)\r   - [Project Features](#project-features)\r   - [Property Generation Screenshot](#property-generation-screenshot)\r   - [Installation](#installation)\r     - [Minimum Hardware Requirements](#minimum-hardware-requirements)\r   - [Usage](#usage)\r   - [Team Contributions](#team-contributions)\r   - [Testing](#testing)\r   - [Deployment](#deployment)\r   - [Troubleshooting](#troubleshooting)\r   - [Limitations](#limitations)\r   - [Roadmap](#roadmap)\r   - [Acknowledgments](#acknowledgments)\r   - [License](#license)\r   - [Contact](#contact)",
+  "main": "postcss.config.js",
+  "author": "",
+  "license": "ISC"
 }

@@ -7,7 +7,7 @@ export default function PropertyComparison() {
     {
       id: 0,
       title: "Modern Downtown Apartment",
-      price: "$650,000",
+      price: "₹5,39,50,000",
       bedrooms: 3,
       bathrooms: 2,
       area: "2,400 sqft",
@@ -26,7 +26,7 @@ export default function PropertyComparison() {
     {
       id: 1,
       title: "Waterfront Villa",
-      price: "$1,200,000",
+      price: "₹9,96,00,000",
       bedrooms: 5,
       bathrooms: 4,
       area: "5,600 sqft",
@@ -45,7 +45,7 @@ export default function PropertyComparison() {
     {
       id: 2,
       title: "Cozy Suburban Home",
-      price: "$380,000",
+      price: "₹3,15,40,000",
       bedrooms: 2,
       bathrooms: 1,
       area: "1,200 sqft",
