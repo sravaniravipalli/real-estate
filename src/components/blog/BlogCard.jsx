@@ -1,3 +1,4 @@
+// JSX Component
 export default function BlogCard({ blog }) {
   const { image, title, content, author, date } = blog;
   return (
@@ -15,12 +16,9 @@ export default function BlogCard({ blog }) {
             <span className="text-[#8879FB] font-bold">Author:</span> {author}
           </p>
 
-          <a
-            href="#"
-            className="block mt-3 text-2xl font-semibold text-gray-800  dark:text-white"
-          >
+          <h3 className="block mt-3 text-2xl font-semibold text-gray-800  dark:text-white">
             {title}
-          </a>
+          </h3>
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-300 md:text-sm">
             {content.slice(0, 350)}...
           </p>

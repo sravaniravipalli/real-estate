@@ -1,3 +1,4 @@
+// JSX Component
 export default function PropertiesCard({ product,setPropertyData }) {
   const { userName, description, propertyImage, valuationCost } = product;
   return (

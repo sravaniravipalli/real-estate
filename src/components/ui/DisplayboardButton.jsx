@@ -1,3 +1,4 @@
+// JSX Component
 export default function DisplayboardButton({children}) {
   return (
     <div>

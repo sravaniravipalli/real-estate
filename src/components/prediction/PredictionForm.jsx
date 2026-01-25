@@ -54,10 +54,11 @@ export default function PredictionForm({ onPredict, loading }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Bedrooms */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="pred-bedrooms" className="block text-sm font-semibold text-gray-700 mb-2">
           🛏️ Bedrooms
         </label>
         <input
+          id="pred-bedrooms"
           type="number"
           name="bedrooms"
           value={formData.bedrooms}
@@ -74,10 +75,11 @@ export default function PredictionForm({ onPredict, loading }) {
 
       {/* Bathrooms */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="pred-bathrooms" className="block text-sm font-semibold text-gray-700 mb-2">
           🚿 Bathrooms
         </label>
         <input
+          id="pred-bathrooms"
           type="number"
           name="bathrooms"
           value={formData.bathrooms}
@@ -94,10 +96,11 @@ export default function PredictionForm({ onPredict, loading }) {
 
       {/* Living Area */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="pred-livingArea" className="block text-sm font-semibold text-gray-700 mb-2">
           📐 Living Area (sq ft)
         </label>
         <input
+          id="pred-livingArea"
           type="number"
           name="livingArea"
           value={formData.livingArea}
@@ -114,10 +117,11 @@ export default function PredictionForm({ onPredict, loading }) {
 
       {/* Condition */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="pred-condition" className="block text-sm font-semibold text-gray-700 mb-2">
           ⭐ Property Condition
         </label>
         <select
+          id="pred-condition"
           name="condition"
           value={formData.condition}
           onChange={handleChange}
@@ -135,10 +139,11 @@ export default function PredictionForm({ onPredict, loading }) {
 
       {/* Schools Nearby */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label htmlFor="pred-schoolsNearby" className="block text-sm font-semibold text-gray-700 mb-2">
           🏫 Schools Nearby
         </label>
         <input
+          id="pred-schoolsNearby"
           type="number"
           name="schoolsNearby"
           value={formData.schoolsNearby}

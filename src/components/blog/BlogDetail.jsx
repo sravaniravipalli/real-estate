@@ -4,7 +4,6 @@ import { useParams } from "react-router";
 export default function BlogDetail() {
   const [blog, setBlog] = useState({});
   const { _id } = useParams();
-  console.log(blog)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,11 +17,10 @@ export default function BlogDetail() {
         if (selectedBlog) {
           setBlog(selectedBlog);
         } else {
-          console.error('Blog not found');
-          // Handle the case when the blog is not found, e.g., display an error message or redirect
+          // Handle the case when the blog is not found
         }
       } catch (error) {
-        console.error('Error fetching blog data:', error);
+        // Handle error fetching blog data
       }
     };
 

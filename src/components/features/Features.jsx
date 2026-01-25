@@ -11,7 +11,7 @@ export default function Features() {
           <div className="w-full h-64 lg:w-1/2 lg:h-auto">
             <img
               className="h-full w-full object-cover"
-              src={`/assets/images/posterAi.png`}
+              src={`/assets/images/posterai.png`}
               alt="Winding mountain road"
             />
           </div>

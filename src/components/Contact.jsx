@@ -1,3 +1,4 @@
+// JSX Component
 export default function Contact() {
   return (
     <section className="bg-white dark:bg-gray-900">

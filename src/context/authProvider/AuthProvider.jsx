@@ -10,16 +10,42 @@ try {
   const app = require("context/firebase/firebase.config").default;
   auth = require("firebase/auth").getAuth(app);
 } catch (error) {
-  console.log("Firebase not initialized, using mock auth");
+  // Firebase not initialized, using mock auth for development
   auth = null;
 }
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    // Initialize user from localStorage
+    try {
+      const savedUser = localStorage.getItem('realEstateUser');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (error) {
+      console.error('Error loading user from localStorage:', error);
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
-  // Mock user database for development
-  const mockUsers = new Map();
+  // Mock user database for development (store in localStorage)
+  const getMockUsers = () => {
+    try {
+      const saved = localStorage.getItem('mockUsersDB');
+      return saved ? new Map(JSON.parse(saved)) : new Map();
+    } catch (error) {
+      return new Map();
+    }
+  };
+
+  const saveMockUsers = (users) => {
+    try {
+      localStorage.setItem('mockUsersDB', JSON.stringify([...users]));
+    } catch (error) {
+      console.error('Error saving mock users:', error);
+    }
+  };
+
+  const mockUsers = getMockUsers();
 
   const createUser = (email, password, displayName = "") => {
     setLoading(true);
@@ -27,7 +53,8 @@ const AuthProvider = ({ children }) => {
       try {
         if (!auth) {
           // Mock implementation
-          if (mockUsers.has(email)) {
+          const users = getMockUsers();
+          if (users.has(email)) {
             setLoading(false);
             reject({ message: "Email already in use" });
           } else {
@@ -36,8 +63,11 @@ const AuthProvider = ({ children }) => {
               email,
               displayName: displayName || "",
             };
-            mockUsers.set(email, { ...mockUser, password });
+            users.set(email, { ...mockUser, password });
+            saveMockUsers(users);
             setUser(mockUser);
+            // Save user to localStorage
+            localStorage.setItem('realEstateUser', JSON.stringify(mockUser));
             setLoading(false);
             resolve({ user: mockUser });
           }
@@ -60,10 +90,13 @@ const AuthProvider = ({ children }) => {
       try {
         if (!auth) {
           // Mock implementation
-          const user = mockUsers.get(email);
+          const users = getMockUsers();
+          const user = users.get(email);
           if (user && user.password === password) {
             const { password, ...userWithoutPassword } = user;
             setUser(userWithoutPassword);
+            // Save user to localStorage
+            localStorage.setItem('realEstateUser', JSON.stringify(userWithoutPassword));
             setLoading(false);
             resolve({ user: userWithoutPassword });
           } else {
@@ -115,6 +148,8 @@ const AuthProvider = ({ children }) => {
             displayName: "Test User",
           };
           setUser(mockUser);
+          // Save user to localStorage
+          localStorage.setItem('realEstateUser', JSON.stringify(mockUser));
           setTimeout(() => resolve({ user: mockUser }), 500);
         } else {
           // Real Firebase implementation
@@ -137,6 +172,8 @@ const AuthProvider = ({ children }) => {
         if (!auth) {
           // Mock implementation
           setUser(null);
+          // Clear user from localStorage
+          localStorage.removeItem('realEstateUser');
           setTimeout(() => resolve({}), 100);
         } else {
           // Real Firebase implementation
@@ -159,8 +196,13 @@ const AuthProvider = ({ children }) => {
         const unsubscribe = require("firebase/auth").onAuthStateChanged(
           auth,
           (currentUser) => {
-            console.log("user observing");
             setUser(currentUser);
+            // Save user to localStorage for persistence
+            if (currentUser) {
+              localStorage.setItem('realEstateUser', JSON.stringify(currentUser));
+            } else {
+              localStorage.removeItem('realEstateUser');
+            }
             setLoading(false);
           }
         );
@@ -169,7 +211,16 @@ const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     } else {
-      // Mock implementation - simulate loading
+      // Mock implementation - check localStorage for existing session
+      const savedUser = localStorage.getItem('realEstateUser');
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (error) {
+          console.error('Error parsing saved user:', error);
+          localStorage.removeItem('realEstateUser');
+        }
+      }
       setTimeout(() => setLoading(false), 500);
     }
   }, []);

@@ -138,34 +138,50 @@ export default function AddPropertyForm() {
     setLoading(true);
 
     try {
-      const formDataToSend = new FormData();
+      // Create property object for localStorage
+      const propertyData = {
+        _id: `local-${Date.now()}`,
+        userName: "Current User", // You can get this from auth context
+        title: formData.title,
+        description: formData.description,
+        propertyImage: imagePreviews[0] || "https://via.placeholder.com/400x300?text=Property",
+        propertyVideo: videoPreviews[0] || "",
+        videoThumbnail: imagePreviews[0] || "",
+        videoDuration: "0:00",
+        videoViews: 0,
+        videoType: "property-tour",
+        valuationCost: `₹${(parseInt(formData.price) || 0).toLocaleString('en-IN')}`,
+        location: formData.state,
+        bedrooms: parseInt(formData.bedrooms),
+        bathrooms: parseInt(formData.bathrooms),
+        area: `${formData.squareFootage} sqft`,
+        propertyType: formData.propertyType,
+        condition: formData.condition,
+        features: formData.features,
+        address: {
+          street: formData.streetAddress,
+          city: formData.city,
+          state: formData.state,
+          zipcode: formData.zipcode
+        },
+        yearBuilt: formData.yearBuilt || "",
+        lotSize: formData.lotSize || "",
+        images: imagePreviews,
+        videos: videoPreviews,
+        createdAt: new Date().toISOString()
+      };
+
+      // Get existing properties from localStorage
+      const existingProperties = JSON.parse(localStorage.getItem('userProperties') || '[]');
       
-      // Add form fields
-      Object.keys(formData).forEach((key) => {
-        formDataToSend.append(key, formData[key]);
-      });
-
-      // Add images
-      images.forEach((image, index) => {
-        formDataToSend.append(`images`, image);
-      });
-
-      // Add videos
-      videos.forEach((video, index) => {
-        formDataToSend.append(`videos`, video);
-      });
-
-      // Send to backend (update the endpoint as needed)
-      const response = await fetch("/api/properties/add", {
-        method: "POST",
-        body: formDataToSend,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to add property");
-      }
+      // Add new property
+      existingProperties.push(propertyData);
+      
+      // Save back to localStorage
+      localStorage.setItem('userProperties', JSON.stringify(existingProperties));
 
       setSuccess(true);
+      
       // Reset form
       setFormData({
         title: "",
@@ -192,10 +208,9 @@ export default function AddPropertyForm() {
 
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
-      console.error("Error:", error);
       setErrors((prev) => ({
         ...prev,
-        submit: error.message,
+        submit: error.message || "Failed to submit property. Please try again.",
       }));
     } finally {
       setLoading(false);
@@ -234,8 +249,9 @@ export default function AddPropertyForm() {
                 <h6 className="text-lg font-bold text-gray-700 mb-4">📋 Property Overview</h6>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Property Title *</label>
+                    <label htmlFor="prop-title" className="block text-gray-700 font-semibold mb-2">Property Title *</label>
                     <input
+                      id="prop-title"
                       type="text"
                       name="title"
                       value={formData.title}
@@ -247,8 +263,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Property Type *</label>
+                    <label htmlFor="prop-propertyType" className="block text-gray-700 font-semibold mb-2">Property Type *</label>
                     <select
+                      id="prop-propertyType"
                       name="propertyType"
                       value={formData.propertyType}
                       onChange={handleInputChange}
@@ -267,8 +284,9 @@ export default function AddPropertyForm() {
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-gray-700 font-semibold mb-2">Description *</label>
+                  <label htmlFor="prop-description" className="block text-gray-700 font-semibold mb-2">Description *</label>
                   <textarea
+                    id="prop-description"
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
@@ -285,8 +303,9 @@ export default function AddPropertyForm() {
                 <h6 className="text-lg font-bold text-gray-700 mb-4">📍 Location Information</h6>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Street Address *</label>
+                    <label htmlFor="prop-streetAddress" className="block text-gray-700 font-semibold mb-2">Street Address *</label>
                     <input
+                      id="prop-streetAddress"
                       type="text"
                       name="streetAddress"
                       value={formData.streetAddress}
@@ -298,8 +317,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">City *</label>
+                    <label htmlFor="prop-city" className="block text-gray-700 font-semibold mb-2">City *</label>
                     <input
+                      id="prop-city"
                       type="text"
                       name="city"
                       value={formData.city}
@@ -311,8 +331,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">State *</label>
+                    <label htmlFor="prop-state" className="block text-gray-700 font-semibold mb-2">State *</label>
                     <input
+                      id="prop-state"
                       type="text"
                       name="state"
                       value={formData.state}
@@ -324,8 +345,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Zip Code *</label>
+                    <label htmlFor="prop-zipcode" className="block text-gray-700 font-semibold mb-2">Zip Code *</label>
                     <input
+                      id="prop-zipcode"
                       type="text"
                       name="zipcode"
                       value={formData.zipcode}
@@ -343,61 +365,72 @@ export default function AddPropertyForm() {
                 <h6 className="text-lg font-bold text-gray-700 mb-4">🏠 Property Details</h6>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Price ($) *</label>
+                    <label htmlFor="prop-price" className="block text-gray-700 font-semibold mb-2">Price ($) *</label>
                     <input
+                      id="prop-price"
                       type="number"
                       name="price"
                       value={formData.price}
                       onChange={handleInputChange}
                       placeholder="Property Price"
+                      min="0"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.price && <p className="mt-1 text-red-500 text-sm">{errors.price}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Bedrooms *</label>
+                    <label htmlFor="prop-bedrooms" className="block text-gray-700 font-semibold mb-2">Bedrooms *</label>
                     <input
+                      id="prop-bedrooms"
                       type="number"
                       name="bedrooms"
                       value={formData.bedrooms}
                       onChange={handleInputChange}
                       placeholder="Number of Bedrooms"
+                      min="0"
+                      max="50"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.bedrooms && <p className="mt-1 text-red-500 text-sm">{errors.bedrooms}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Bathrooms *</label>
+                    <label htmlFor="prop-bathrooms" className="block text-gray-700 font-semibold mb-2">Bathrooms *</label>
                     <input
+                      id="prop-bathrooms"
                       type="number"
                       name="bathrooms"
                       value={formData.bathrooms}
                       onChange={handleInputChange}
                       placeholder="Number of Bathrooms"
                       step="0.5"
+                      min="0"
+                      max="50"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.bathrooms && <p className="mt-1 text-red-500 text-sm">{errors.bathrooms}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Square Footage *</label>
+                    <label htmlFor="prop-squareFootage" className="block text-gray-700 font-semibold mb-2">Square Footage *</label>
                     <input
+                      id="prop-squareFootage"
                       type="number"
                       name="squareFootage"
                       value={formData.squareFootage}
                       onChange={handleInputChange}
                       placeholder="Square Feet"
+                      min="1"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.squareFootage && <p className="mt-1 text-red-500 text-sm">{errors.squareFootage}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Lot Size</label>
+                    <label htmlFor="prop-lotSize" className="block text-gray-700 font-semibold mb-2">Lot Size</label>
                     <input
+                      id="prop-lotSize"
                       type="text"
                       name="lotSize"
                       value={formData.lotSize}
@@ -408,13 +441,16 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Year Built</label>
+                    <label htmlFor="prop-yearBuilt" className="block text-gray-700 font-semibold mb-2">Year Built</label>
                     <input
+                      id="prop-yearBuilt"
                       type="number"
                       name="yearBuilt"
                       value={formData.yearBuilt}
                       onChange={handleInputChange}
                       placeholder="Year"
+                      min="1800"
+                      max="2026"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -422,8 +458,9 @@ export default function AddPropertyForm() {
 
                 <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Condition *</label>
+                    <label htmlFor="prop-condition" className="block text-gray-700 font-semibold mb-2">Condition *</label>
                     <select
+                      id="prop-condition"
                       name="condition"
                       value={formData.condition}
                       onChange={handleInputChange}
@@ -439,8 +476,9 @@ export default function AddPropertyForm() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 font-semibold mb-2">Features</label>
+                    <label htmlFor="prop-features" className="block text-gray-700 font-semibold mb-2">Features</label>
                     <input
+                      id="prop-features"
                       type="text"
                       name="features"
                       value={formData.features}
@@ -523,6 +561,7 @@ export default function AddPropertyForm() {
                         <div key={index} className="relative group">
                           <video
                             src={preview}
+                            controls
                             className="w-full h-32 object-cover rounded-lg bg-black"
                           />
                           <button
@@ -549,7 +588,31 @@ export default function AddPropertyForm() {
                   {loading ? "🔄 Adding Property..." : "✅ Add Property"}
                 </button>
                 <button
-                  type="reset"
+                  type="button"
+                  onClick={() => {
+                    setFormData({
+                      title: "",
+                      description: "",
+                      streetAddress: "",
+                      city: "",
+                      state: "",
+                      zipcode: "",
+                      price: "",
+                      bedrooms: "",
+                      bathrooms: "",
+                      squareFootage: "",
+                      lotSize: "",
+                      yearBuilt: "",
+                      propertyType: "",
+                      condition: "",
+                      features: "",
+                    });
+                    setImages([]);
+                    setVideos([]);
+                    setImagePreviews([]);
+                    setVideoPreviews([]);
+                    setErrors({});
+                  }}
                   className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200"
                 >
                   🔄 Clear Form

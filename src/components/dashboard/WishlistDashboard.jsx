@@ -10,7 +10,7 @@ export default function WishlistDashboard() {
       {
         id: 1,
         title: "Modern Downtown Apartment",
-        price: "$650,000",
+        price: "₹5,25,00,000",
         bedrooms: 3,
         bathrooms: 2,
         area: "2,400 sqft",
@@ -22,7 +22,7 @@ export default function WishlistDashboard() {
       {
         id: 2,
         title: "Waterfront Villa",
-        price: "$1,200,000",
+        price: "₹10,00,00,000",
         bedrooms: 5,
         bathrooms: 4,
         area: "5,600 sqft",
@@ -34,7 +34,7 @@ export default function WishlistDashboard() {
       {
         id: 3,
         title: "Cozy Suburban Home",
-        price: "$380,000",
+        price: "₹3,15,00,000",
         bedrooms: 2,
         bathrooms: 1,
         area: "1,200 sqft",
@@ -74,7 +74,7 @@ export default function WishlistDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-2">
-            <HeartIcon className="w-8 h-8 text-red-600 fill-red-600" />
+            <span className="text-4xl">❤️</span>
             My Wishlist
           </h2>
           <p className="text-gray-600">Your saved properties ({wishlist.length})</p>

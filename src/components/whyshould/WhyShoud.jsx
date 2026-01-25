@@ -1,3 +1,4 @@
+// JSX Component
 export default function WhyShoud() {
   return (
     <div className="bg-white dark:bg-gray-900">

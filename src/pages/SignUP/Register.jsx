@@ -25,13 +25,14 @@ const Register = () => {
     createUser(data.email, data.password, data.username)
       .then((result) => {
         const user = result.user;
-        console.log(user);
         const userName = {
           displayName: data.username,
         };
         updateUser(userName)
           .then(() => {})
-          .catch((err) => console.log(err));
+          .catch((err) => {
+            // Handle update error
+          });
         toast("Your registration is Successful (•‿•)", {
           style: {
             border: "1px solid #fff",
@@ -43,7 +44,6 @@ const Register = () => {
         reset();
       })
       .catch((err) => {
-        console.log(err);
         setSignUpError(err.message);
       });
   };
@@ -58,7 +58,6 @@ const Register = () => {
     providerLogin(googleProvider)
       .then((result) => {
         const user = result.user;
-        console.log(user);
         toast("Your registration is Successful (•‿•)", {
           style: {
             border: "1px solid #fff",
@@ -68,7 +67,9 @@ const Register = () => {
         });
         navigate("/dashboard");
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        // Handle Google sign in error
+      });
   };
 
   // Signup with Github
@@ -76,7 +77,6 @@ const Register = () => {
     providerLogin(githubProvider)
       .then((result) => {
         const user = result.user;
-        console.log(user);
         toast("Your registration is Successful (•‿•)", {
           style: {
             border: "1px solid #fff",
@@ -86,7 +86,9 @@ const Register = () => {
         });
         navigate("/dashboard");
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        // Handle Github sign in error
+      });
   };
 
   return (
