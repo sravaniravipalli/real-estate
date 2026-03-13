@@ -1,4 +1,6 @@
-export default function PredictionResult({ price }) {
+import { Link } from "react-router-dom";
+
+export default function PredictionResult({ price, onReset }) {
   const formattedPrice = new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
@@ -32,16 +34,30 @@ export default function PredictionResult({ price }) {
       {/* Info Box */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-900">
-          <span className="font-semibold">💡 Note:</span> This is an automated estimate based on property features and market data. 
-          For a professional appraisal, please consult a certified real estate appraiser.
+          <span className="font-semibold">💡 Note:</span> This is an automated estimate based on
+          property features and market data. For a professional appraisal, please consult a
+          certified real estate appraiser.
         </p>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-center">
-        <button className="bg-gray-300 hover:bg-gray-400 text-gray-900 font-semibold py-2 px-6 rounded-lg transition-colors">
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <button
+          onClick={onReset}
+          className="bg-gray-300 hover:bg-gray-400 text-gray-900 font-semibold py-2 px-6 rounded-lg transition-colors"
+        >
           🔄 New Prediction
         </button>
+        <Link to="/properties">
+          <button className="w-full bg-primary hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors">
+            🏠 Browse Properties
+          </button>
+        </Link>
+        <Link to="/dashboard">
+          <button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">
+            ➕ List Your Property
+          </button>
+        </Link>
       </div>
     </div>
   );

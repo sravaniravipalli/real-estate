@@ -1,68 +1,57 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { AuthContext } from "context/authProvider/AuthProvider";
+
+const BACKEND_URL = "http://localhost:5000";
 
 export default function WishlistDashboard() {
   const [wishlist, setWishlist] = useState([]);
   const [filterType, setFilterType] = useState("all");
+  const [loadingWishlist, setLoadingWishlist] = useState(true);
+  const { user } = useContext(AuthContext);
 
-  // Mock wishlist data
   useEffect(() => {
-    const mockWishlist = [
-      {
-        id: 1,
-        title: "Modern Downtown Apartment",
-        price: "₹5,25,00,000",
-        bedrooms: 3,
-        bathrooms: 2,
-        area: "2,400 sqft",
-        location: "Downtown",
-        image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop",
-        type: "apartment",
-        addedDate: "2025-12-01"
-      },
-      {
-        id: 2,
-        title: "Waterfront Villa",
-        price: "₹10,00,00,000",
-        bedrooms: 5,
-        bathrooms: 4,
-        area: "5,600 sqft",
-        location: "Waterfront",
-        image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=300&fit=crop",
-        type: "house",
-        addedDate: "2025-11-28"
-      },
-      {
-        id: 3,
-        title: "Cozy Suburban Home",
-        price: "₹3,15,00,000",
-        bedrooms: 2,
-        bathrooms: 1,
-        area: "1,200 sqft",
-        location: "Suburbs",
-        image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop",
-        type: "house",
-        addedDate: "2025-11-25"
+    const fetchWishlist = async () => {
+      setLoadingWishlist(true);
+      const userId = user?.uid || user?.email || "guest";
+      try {
+        const res = await fetch(`${BACKEND_URL}/wishlist/${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setWishlist(data.wishlist || []);
+          localStorage.setItem("wishlist", JSON.stringify(data.wishlist || []));
+        } else {
+          throw new Error("Backend error");
+        }
+      } catch (err) {
+        console.warn("Backend unavailable, loading from localStorage");
+        const saved = JSON.parse(localStorage.getItem("wishlist") || "[]");
+        setWishlist(saved);
+      } finally {
+        setLoadingWishlist(false);
       }
-    ];
-    setWishlist(mockWishlist);
-  }, []);
+    };
+    fetchWishlist();
+  }, [user]);
 
-  const removeFromWishlist = (id) => {
-    setWishlist(wishlist.filter(item => item.id !== id));
+  const removeFromWishlist = async (id) => {
+    const userId = user?.uid || user?.email || "guest";
+    const updated = wishlist.filter((item) => item.id !== id);
+    setWishlist(updated);
+    localStorage.setItem("wishlist", JSON.stringify(updated));
+    try {
+      await fetch(`${BACKEND_URL}/wishlist/${userId}/${id}`, { method: "DELETE" });
+    } catch (err) {
+      console.warn("Backend unavailable, removed from localStorage only");
+    }
   };
 
-  const filteredWishlist = filterType === "all" 
-    ? wishlist 
-    : wishlist.filter(item => item.type === filterType);
+  const filteredWishlist =
+    filterType === "all" ? wishlist : wishlist.filter((item) => item.type === filterType);
 
   const shareProperty = (property) => {
     const text = `Check out this property: ${property.title} - ${property.price}`;
     if (navigator.share) {
-      navigator.share({
-        title: property.title,
-        text: text,
-        url: window.location.href
-      });
+      navigator.share({ title: property.title, text, url: window.location.href });
     } else {
       alert("Share: " + text);
     }
@@ -71,44 +60,53 @@ export default function WishlistDashboard() {
   return (
     <section className="p-8 bg-gradient-to-br from-pink-50 to-red-100 rounded-lg">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-2">
-            <span className="text-4xl">❤️</span>
-            My Wishlist
+            <span className="text-4xl">❤️</span> My Wishlist
           </h2>
           <p className="text-gray-600">Your saved properties ({wishlist.length})</p>
         </div>
 
-        {/* Filter Buttons */}
         <div className="mb-6 flex flex-wrap gap-2">
-          {["all", "house", "apartment"].map(type => (
-            <button
-              key={type}
-              onClick={() => setFilterType(type)}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
-                filterType === type
-                  ? "bg-red-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:border-red-600"
-              }`}
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)}s ({filterType === type ? filteredWishlist.length : 0})
-            </button>
-          ))}
+          {["all", "house", "apartment"].map((type) => {
+            const count = type === "all" ? wishlist.length : wishlist.filter((i) => i.type === type).length;
+            return (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                className={`px-4 py-2 rounded-lg font-semibold transition ${
+                  filterType === type
+                    ? "bg-red-600 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:border-red-600"
+                }`}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}s ({count})
+              </button>
+            );
+          })}
         </div>
 
-        {/* Wishlist Items */}
-        {filteredWishlist.length === 0 ? (
+        {loadingWishlist ? (
+          <div className="text-center py-12">
+            <div className="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto"></div>
+            <p className="mt-3 text-gray-500">Loading wishlist...</p>
+          </div>
+        ) : filteredWishlist.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg">
             <p className="text-6xl text-gray-300 mx-auto mb-4">❤️</p>
             <p className="text-gray-500 text-lg">No properties in your wishlist</p>
-            <p className="text-gray-400 text-sm mt-2">Start adding properties to keep track of your favorites</p>
+            <p className="text-gray-400 text-sm mt-2">
+              Go to Properties and click the ❤️ on any property to save it here
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredWishlist.map(property => (
-              <div key={property.id} className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition transform hover:scale-105">
-                {/* Image */}
+            {filteredWishlist.map((property) => (
+              <div
+                key={property.id}
+                className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition transform hover:scale-105"
+              >
                 <div className="relative h-48 bg-gray-300 overflow-hidden">
                   <img
                     src={property.image}
@@ -116,47 +114,28 @@ export default function WishlistDashboard() {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3Crect width="300" height="200" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="%236b7280"%3EProperty Image%3C/text%3E%3C/svg%3E';
+                      e.target.src = "https://placehold.co/400x300/e2e8f0/64748b?text=No+Image";
                     }}
                   />
                   <div className="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
                     {property.type.charAt(0).toUpperCase() + property.type.slice(1)}
                   </div>
                 </div>
-
-                {/* Content */}
                 <div className="p-4">
                   <h3 className="text-lg font-bold text-gray-900 mb-1">{property.title}</h3>
-                  <p className="text-sm text-gray-500 mb-3 flex items-center gap-1">
+                  <p className="text-sm text-gray-500 mb-2 flex items-center gap-1">
                     📍 {property.location}
                   </p>
-
-                  {/* Price */}
+                  {property.description && (
+                    <p className="text-xs text-gray-400 mb-3 line-clamp-2">{property.description}</p>
+                  )}
                   <p className="text-2xl font-bold text-red-600 mb-4">{property.price}</p>
-
-                  {/* Details Grid */}
-                  <div className="grid grid-cols-3 gap-2 mb-4 pb-4 border-b">
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Bedrooms</p>
-                      <p className="text-lg font-bold text-gray-900">{property.bedrooms}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Bathrooms</p>
-                      <p className="text-lg font-bold text-gray-900">{property.bathrooms}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-gray-500">Size</p>
-                      <p className="text-sm font-bold text-gray-900">{property.area}</p>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
                   <div className="flex gap-2">
                     <button
                       onClick={() => shareProperty(property)}
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
                     >
-                      🔤 Share
+                      🔗 Share
                     </button>
                     <button
                       onClick={() => removeFromWishlist(property.id)}
@@ -165,8 +144,6 @@ export default function WishlistDashboard() {
                       🗑️ Remove
                     </button>
                   </div>
-
-                  {/* Added Date */}
                   <p className="text-xs text-gray-400 mt-3 text-center">Added {property.addedDate}</p>
                 </div>
               </div>
@@ -174,30 +151,30 @@ export default function WishlistDashboard() {
           </div>
         )}
 
-        {/* Summary Stats */}
         {wishlist.length > 0 && (
           <div className="mt-8 bg-white rounded-lg p-6 shadow">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Wishlist Summary</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-gray-600 text-sm">Total Properties</p>
                 <p className="text-3xl font-bold text-gray-900">{wishlist.length}</p>
               </div>
               <div className="text-center">
-                <p className="text-gray-600 text-sm">Avg Price</p>
-                <p className="text-2xl font-bold text-red-600">₹6.17Cr</p>
+                <p className="text-gray-600 text-sm">Houses</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {wishlist.filter((i) => i.type === "house").length}
+                </p>
               </div>
               <div className="text-center">
-                <p className="text-gray-600 text-sm">Avg Bedrooms</p>
-                <p className="text-3xl font-bold text-gray-900">3.3</p>
-              </div>
-              <div className="text-center">
-                <p className="text-gray-600 text-sm">Avg Size</p>
-                <p className="text-2xl font-bold text-gray-900">3,067 sqft</p>
+                <p className="text-gray-600 text-sm">Apartments</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {wishlist.filter((i) => i.type === "apartment").length}
+                </p>
               </div>
             </div>
           </div>
         )}
+
       </div>
     </section>
   );

@@ -1,5 +1,31 @@
 import React, { useState } from 'react';
 
+const VIZAG_LOCATIONS = [
+  "Beach Road",
+  "MVP Colony",
+  "Madhurawada",
+  "Rushikonda Hills",
+  "Gajuwaka",
+  "Yendada",
+  "Hanumanthawaka",
+  "Seethammadhara",
+  "Kommadi",
+  "Dwaraka Nagar",
+  "Bheemunipatnam",
+  "Steel Plant Township",
+  "Arilova",
+  "Pendurthi",
+  "Lawson's Bay Colony",
+  "Maharanipeta",
+  "Marripalem",
+  "Gopalapatnam",
+  "Waltair Uplands",
+  "PM Palem",
+  "Thatichetlapalem",
+  "Simhachalam",
+  "Isukathota",
+];
+
 export default function PredictionForm({ onPredict, loading }) {
   const [formData, setFormData] = useState({
     bedrooms: 3,
@@ -7,36 +33,40 @@ export default function PredictionForm({ onPredict, loading }) {
     livingArea: 2000,
     condition: 3,
     schoolsNearby: 2,
+    location: "Beach Road",
   });
 
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: parseFloat(value) || 0,
-    }));
+
+    // bathrooms and bedrooms and schoolsNearby → integer
+    if (name === 'bathrooms' || name === 'bedrooms' || name === 'schoolsNearby') {
+      setFormData((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
+    } else if (name === 'location') {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: parseFloat(value) || 0 }));
+    }
+
     setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (formData.bedrooms < 1 || formData.bedrooms > 10) {
+    if (formData.bedrooms < 1 || formData.bedrooms > 10)
       newErrors.bedrooms = 'Bedrooms must be between 1 and 10';
-    }
-    if (formData.bathrooms < 0.5 || formData.bathrooms > 10) {
-      newErrors.bathrooms = 'Bathrooms must be between 0.5 and 10';
-    }
-    if (formData.livingArea < 500 || formData.livingArea > 10000) {
+    if (formData.bathrooms < 1 || formData.bathrooms > 10)
+      newErrors.bathrooms = 'Bathrooms must be between 1 and 10';
+    if (formData.livingArea < 500 || formData.livingArea > 10000)
       newErrors.livingArea = 'Living area must be between 500 and 10,000 sq ft';
-    }
-    if (formData.condition < 1 || formData.condition > 5) {
+    if (formData.condition < 1 || formData.condition > 5)
       newErrors.condition = 'Condition must be between 1 and 5';
-    }
-    if (formData.schoolsNearby < 0 || formData.schoolsNearby > 10) {
+    if (formData.schoolsNearby < 0 || formData.schoolsNearby > 10)
       newErrors.schoolsNearby = 'Schools nearby must be between 0 and 10';
-    }
+    if (!formData.location)
+      newErrors.location = 'Please select a location';
     return newErrors;
   };
 
@@ -52,6 +82,27 @@ export default function PredictionForm({ onPredict, loading }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+
+      {/* Location */}
+      <div>
+        <label htmlFor="pred-location" className="block text-sm font-semibold text-gray-700 mb-2">
+          📍 Location (Visakhapatnam)
+        </label>
+        <select
+          id="pred-location"
+          name="location"
+          value={formData.location}
+          onChange={handleChange}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={loading}
+        >
+          {VIZAG_LOCATIONS.map((loc) => (
+            <option key={loc} value={loc}>{loc}</option>
+          ))}
+        </select>
+        {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+      </div>
+
       {/* Bedrooms */}
       <div>
         <label htmlFor="pred-bedrooms" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -70,10 +121,10 @@ export default function PredictionForm({ onPredict, loading }) {
           disabled={loading}
         />
         {errors.bedrooms && <p className="text-red-500 text-sm mt-1">{errors.bedrooms}</p>}
-        <p className="text-xs text-gray-500 mt-1">1-10 bedrooms</p>
+        <p className="text-xs text-gray-500 mt-1">1–10 bedrooms</p>
       </div>
 
-      {/* Bathrooms */}
+      {/* Bathrooms - integer only */}
       <div>
         <label htmlFor="pred-bathrooms" className="block text-sm font-semibold text-gray-700 mb-2">
           🚿 Bathrooms
@@ -84,14 +135,14 @@ export default function PredictionForm({ onPredict, loading }) {
           name="bathrooms"
           value={formData.bathrooms}
           onChange={handleChange}
-          min="0.5"
+          min="1"
           max="10"
-          step="0.5"
+          step="1"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={loading}
         />
         {errors.bathrooms && <p className="text-red-500 text-sm mt-1">{errors.bathrooms}</p>}
-        <p className="text-xs text-gray-500 mt-1">0.5-10 bathrooms</p>
+        <p className="text-xs text-gray-500 mt-1">1–10 bathrooms (whole numbers only)</p>
       </div>
 
       {/* Living Area */}
@@ -112,7 +163,7 @@ export default function PredictionForm({ onPredict, loading }) {
           disabled={loading}
         />
         {errors.livingArea && <p className="text-red-500 text-sm mt-1">{errors.livingArea}</p>}
-        <p className="text-xs text-gray-500 mt-1">500-10,000 square feet</p>
+        <p className="text-xs text-gray-500 mt-1">500–10,000 square feet</p>
       </div>
 
       {/* Condition */}
@@ -155,10 +206,10 @@ export default function PredictionForm({ onPredict, loading }) {
           disabled={loading}
         />
         {errors.schoolsNearby && <p className="text-red-500 text-sm mt-1">{errors.schoolsNearby}</p>}
-        <p className="text-xs text-gray-500 mt-1">0-10 schools</p>
+        <p className="text-xs text-gray-500 mt-1">0–10 schools</p>
       </div>
 
-      {/* Submit Button */}
+      {/* Submit */}
       <button
         type="submit"
         disabled={loading}
