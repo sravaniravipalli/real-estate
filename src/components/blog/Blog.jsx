@@ -5,10 +5,17 @@ import { Link } from "react-router-dom";
 
 const Blog = () => {
   const [blogs, setBlogs] = useState([]);
+  const [loadError, setLoadError] = useState("");
+  const BACKEND_URL = import.meta.env.VITE_REACT_API_URL || "http://localhost:5000";
   useEffect(() => {
-    fetch("/blogsData.json")
-      .then((res) => res.json())
-      .then((data) => setBlogs(data));
+    setLoadError("");
+    fetch(`${BACKEND_URL}/blogs`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load blogs from backend");
+        return res.json();
+      })
+      .then((data) => setBlogs(data.data || data.blogs || []))
+      .catch((err) => setLoadError(err.message || "Failed to load blogs."));
   }, []);
 
   useTitle('Blog');
@@ -21,6 +28,12 @@ const Blog = () => {
       <p className=" text-gray-600">Learn about the benefits, possibilities, and potential of using advanced language models to create compelling property listings. Stay ahead of the curve and unlock the future of property generation with OpenAI</p>
     </div>
     <div className="divider mt-0"></div>
+        {loadError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700 font-semibold">{loadError}</p>
+            <p className="text-red-600 text-sm mt-1">Seed blogs into the database, then refresh.</p>
+          </div>
+        )}
         <div>
           {blogs.map((blog) => {
             return <Link to={`/blog/${blog._id}`} key={blog._id}>

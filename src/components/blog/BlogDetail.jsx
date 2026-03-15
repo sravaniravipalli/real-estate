@@ -3,24 +3,20 @@ import { useParams } from "react-router";
 
 export default function BlogDetail() {
   const [blog, setBlog] = useState({});
+  const [loadError, setLoadError] = useState("");
   const { _id } = useParams();
+  const BACKEND_URL = import.meta.env.VITE_REACT_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/blogsData.json');
+        setLoadError("");
+        const response = await fetch(`${BACKEND_URL}/blogs/${_id}`);
+        if (!response.ok) throw new Error("Blog not found");
         const data = await response.json();
-
-        // Assuming the blogs are stored in an array in the JSON file
-        const selectedBlog = data.find(blog => blog._id === _id);
-
-        if (selectedBlog) {
-          setBlog(selectedBlog);
-        } else {
-          // Handle the case when the blog is not found
-        }
+        setBlog(data.data || data.blog || {});
       } catch (error) {
-        // Handle error fetching blog data
+        setLoadError(error?.message || "Failed to load blog.");
       }
     };
 
@@ -30,6 +26,11 @@ export default function BlogDetail() {
   return (
     <div className="bg-gray-100 py-12 md:py-16 px-6 md:px-5">
       <div className="max-w-screen-xl mx-auto ">
+        {loadError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700 font-semibold">{loadError}</p>
+          </div>
+        )}
         {/* header ends here */}
         <main className="mt-10">
           <div

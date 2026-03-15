@@ -9,7 +9,7 @@ import {
   predictAvailabilityInLocation,
 } from "api/propertyFilters";
 
-export default function PropertyFilter({ onFilterChange }) {
+export default function PropertyFilter({ properties = [], onFilterChange }) {
   const [selectedLocation, setSelectedLocation] = useState("All");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(600000000);
@@ -18,11 +18,12 @@ export default function PropertyFilter({ onFilterChange }) {
   const [recommendations, setRecommendations] = useState([]);
   const [availability, setAvailability] = useState(null);
 
-  const locations = ["All", ...getUniqueLocations()];
-  const stats = getPriceStatistics(selectedLocation);
+  const locations = ["All", ...getUniqueLocations(properties)];
+  const stats = getPriceStatistics(properties, selectedLocation);
 
   const handleFilterChange = () => {
     const filtered = filterPropertiesByLocationAndPrice(
+      properties,
       selectedLocation,
       minPrice,
       maxPrice
@@ -36,11 +37,11 @@ export default function PropertyFilter({ onFilterChange }) {
     const prefs = {
       bedrooms: bedrooms ? parseInt(bedrooms) : null,
     };
-    const recs = recommendProperties(selectedLocation, budget, prefs);
+    const recs = recommendProperties(properties, selectedLocation, budget, prefs);
     setRecommendations(recs);
     
     // Predict availability
-    const avail = predictAvailabilityInLocation(selectedLocation, {
+    const avail = predictAvailabilityInLocation(properties, selectedLocation, {
       min: minPrice,
       max: maxPrice,
     });

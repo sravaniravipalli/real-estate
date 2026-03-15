@@ -1,4 +1,3 @@
-import { mockProperties } from "../data/mockProperties";
 import { fetchWithRetry, handleApiError } from "../utils/apiUtils";
 
 export const generatePropertyInfo = async (promptData) => {
@@ -31,18 +30,12 @@ export const fetchProducts = async () => {
       15000 // 15 second timeout
     );
     const data = await response.json();
-    
-    // Merge with user-added properties from localStorage
-    const userProperties = JSON.parse(localStorage.getItem('userProperties') || '[]');
-    const allProperties = [...userProperties, ...data.data];
-    
-    return { data: allProperties };
+
+    const items = data?.data || data?.properties || [];
+    return { data: items };
   } catch (error) {
-    // Using mock properties + user properties as fallback
-    const userProperties = JSON.parse(localStorage.getItem('userProperties') || '[]');
-    const allProperties = [...userProperties, ...mockProperties];
-    
-    return { data: allProperties };
+    const formattedError = handleApiError(error);
+    throw new Error(formattedError.message);
   }
 };
 

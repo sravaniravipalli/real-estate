@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "context/authProvider/AuthProvider";
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_REACT_API_URL || "http://localhost:5000";
 
 export default function AddPropertyForm({ onPropertyAdded }) {
   const { user } = useContext(AuthContext);
@@ -134,25 +134,21 @@ export default function AddPropertyForm({ onPropertyAdded }) {
         createdAt: new Date().toISOString(),
       };
 
-      // 1. Save to localStorage
-      const existingProperties = JSON.parse(localStorage.getItem('userProperties') || '[]');
-      existingProperties.push(propertyData);
-      localStorage.setItem('userProperties', JSON.stringify(existingProperties));
-
-      // 2. Save to backend
-      try {
-        await fetch(`${BACKEND_URL}/properties`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(propertyData),
-        });
-      } catch (backendErr) {
-        console.warn('Backend unavailable, saved to localStorage only');
+      // Save to backend (DB)
+      const res = await fetch(`${BACKEND_URL}/properties`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(propertyData),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to save property to backend.");
       }
+      const saved = await res.json();
+      const savedProperty = saved?.data || saved?.property || propertyData;
 
       setSuccess(true);
       resetForm();
-      if (onPropertyAdded) onPropertyAdded(propertyData);
+      if (onPropertyAdded) onPropertyAdded(savedProperty);
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
       setErrors((prev) => ({ ...prev, submit: error.message || "Failed to submit property." }));

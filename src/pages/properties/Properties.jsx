@@ -11,6 +11,7 @@ export default function Properties() {
   const [productData, setProductData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const [propertyData, setPropertyData] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const productsPerPage = 12;
@@ -19,14 +20,15 @@ export default function Properties() {
 
   useEffect(() => {
     setIsLoading(true);
+    setLoadError("");
     fetchProducts()
       .then((data) => {
-        setProductData(data.data);
-        setFilteredData(data.data);
+        setProductData(data.data || []);
+        setFilteredData(data.data || []);
         setIsLoading(false);
       })
       .catch((error) => {
-        // Handle error gracefully
+        setLoadError(error?.message || "Failed to load properties from backend.");
         setIsLoading(false);
       });
   }, []);
@@ -53,7 +55,16 @@ export default function Properties() {
   return (
     <div className="bg-gray-100">
       <div className="container mx-auto pt-20 md:pt-24 lg:pt-28 pb-10 lg:pb-20 px-5 md:px-2">
-        <PropertyFilter onFilterChange={handleFilterChange} />
+        <PropertyFilter properties={productData} onFilterChange={handleFilterChange} />
+
+        {loadError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700 font-semibold">{loadError}</p>
+            <p className="text-red-600 text-sm mt-1">
+              Make sure the backend is running and the database is seeded.
+            </p>
+          </div>
+        )}
         
         {filteredData.length === 0 ? (
           <div className="text-center py-12">
