@@ -24,3 +24,14 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+_revert_backup_*/
+
+# Local DB / caches
+house_price_prediction/backend/*.db
+house_price_prediction/backend/*.sqlite
+house_price_prediction/backend/*.sqlite3
+house_price_prediction/backend/__pycache__/
+house_price_prediction/backend/.pytest_cache/
+
+# Large local ML artifacts (don't commit; use LFS or seed via DB)
+house_price_prediction/backend/model/*.pkl

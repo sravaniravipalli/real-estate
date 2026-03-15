@@ -1,0 +1,8 @@
+flask
+flask-cors
+gunicorn
+flask-sqlalchemy
+psycopg2-binary
+numpy
+pandas
+scikit-learn==1.8.0
