@@ -166,6 +166,32 @@ def _normalize_property_payload(payload: dict) -> dict:
     return payload
 
 
+def _absolute_if_relative_media_url(value: str) -> str:
+    if not value.startswith("/"):
+        return value
+    # Only rewrite our own API-served content.
+    if not (value.startswith("/media/") or value.startswith("/assets/") or value.startswith("/houses/")):
+        return value
+    return request.url_root.rstrip("/") + value
+
+
+def _rewrite_media_urls(payload: dict) -> dict:
+    # Mutates a copy-safe dict only.
+    keys = [
+        "propertyImage",
+        "videoThumbnail",
+        "thumbnail",
+        "image",
+        "propertyVideo",
+        "videoUrl",
+    ]
+    for k in keys:
+        v = payload.get(k)
+        if isinstance(v, str):
+            payload[k] = _absolute_if_relative_media_url(v)
+    return payload
+
+
 def load_ml_artifacts():
     """Load model + scaler, and raise clear errors if they're missing/mismatched."""
     global model, scaler
@@ -302,12 +328,12 @@ def predict():
 @app.route("/properties", methods=["GET"])
 def get_properties():
     items = Property.query.order_by(Property.id.asc()).all()
-    return jsonify({"properties": [p.payload for p in items]})
+    return jsonify({"properties": [_rewrite_media_urls(dict(p.payload)) for p in items]})
 
 
 @app.route("/properties", methods=["POST"])
 def add_property():
-    data = request.json
+    data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Property data is required"}), 400
 
@@ -336,12 +362,12 @@ def get_wishlist(user_id):
         .order_by(WishlistItem.added_at.desc())
         .all()
     )
-    return jsonify({"wishlist": [w.payload for w in items]})
+    return jsonify({"wishlist": [_rewrite_media_urls(dict(w.payload)) for w in items]})
 
 
 @app.route("/wishlist/<user_id>", methods=["POST"])
 def add_to_wishlist(user_id):
-    data = request.json
+    data = request.get_json(silent=True)
     if not data or "id" not in data:
         return jsonify({"error": "Property data with id is required"}), 400
 
@@ -350,7 +376,7 @@ def add_to_wishlist(user_id):
         user_id=str(user_id), property_external_id=external_id
     ).first()
     if existing is not None:
-        return jsonify({"message": "Already in wishlist", "wishlist": [existing.payload]}), 200
+        return jsonify({"message": "Already in wishlist", "wishlist": [_rewrite_media_urls(dict(existing.payload))]}), 200
 
     db.session.add(
         WishlistItem(
@@ -366,7 +392,7 @@ def add_to_wishlist(user_id):
         .order_by(WishlistItem.added_at.desc())
         .all()
     )
-    return jsonify({"message": "Added to wishlist", "wishlist": [w.payload for w in items]}), 201
+    return jsonify({"message": "Added to wishlist", "wishlist": [_rewrite_media_urls(dict(w.payload)) for w in items]}), 201
 
 
 @app.route("/wishlist/<user_id>/<property_id>", methods=["DELETE"])
@@ -382,8 +408,8 @@ def remove_from_wishlist(user_id, property_id):
         .all()
     )
     if deleted == 0:
-        return jsonify({"error": "Not found", "wishlist": [w.payload for w in items]}), 404
-    return jsonify({"message": "Removed from wishlist", "wishlist": [w.payload for w in items]})
+        return jsonify({"error": "Not found", "wishlist": [_rewrite_media_urls(dict(w.payload)) for w in items]}), 404
+    return jsonify({"message": "Removed from wishlist", "wishlist": [_rewrite_media_urls(dict(w.payload)) for w in items]})
 
 
 # -------------------- Videos + Blogs (for main React UI) --------------------
@@ -459,7 +485,7 @@ def load_videos_from_public():
 @app.route("/videos", methods=["GET"])
 def list_videos():
     videos = Video.query.order_by(Video.id.asc()).all()
-    return jsonify({"data": [v.payload for v in videos]})
+    return jsonify({"data": [_rewrite_media_urls(dict(v.payload)) for v in videos]})
 
 
 @app.route("/video-categories", methods=["GET"])
@@ -473,7 +499,7 @@ def get_video_by_property(property_id):
     v = Video.query.filter_by(property_external_id=str(property_id)).order_by(Video.id.asc()).first()
     if v is None:
         return jsonify({"error": "Video not found"}), 404
-    return jsonify({"data": v.payload})
+    return jsonify({"data": _rewrite_media_urls(dict(v.payload))})
 
 
 def _blogs_file_candidates():
@@ -495,7 +521,7 @@ def load_blogs():
 @app.route("/blogs", methods=["GET"])
 def list_blogs():
     blogs = BlogPost.query.order_by(BlogPost.id.asc()).all()
-    return jsonify({"data": [b.payload for b in blogs]})
+    return jsonify({"data": [_rewrite_media_urls(dict(b.payload)) for b in blogs]})
 
 
 @app.route("/blogs/<blog_id>", methods=["GET"])
@@ -503,7 +529,7 @@ def get_blog(blog_id):
     blog = BlogPost.query.filter_by(external_id=str(blog_id)).first()
     if blog is None:
         return jsonify({"error": "Blog not found"}), 404
-    return jsonify({"data": blog.payload})
+    return jsonify({"data": _rewrite_media_urls(dict(blog.payload))})
 
 
 def _require_seed_token():
