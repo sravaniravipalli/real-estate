@@ -543,27 +543,36 @@ def _require_seed_token():
         return Response("Unauthorized", status=401)
 
 
-def _seed_media_from_public(include_videos: bool, include_images: bool):
+def _seed_media_from_public(include_videos: bool, include_images: bool, force: bool):
     inserted = 0
+    updated = 0
 
     if include_videos and VIDEO_DIR.exists():
         for p in sorted(VIDEO_DIR.glob("property*.mp4")):
             key = f"assets/videos/{p.name}"
-            if MediaBlob.query.filter_by(key=key).first() is not None:
-                continue
-            db.session.add(MediaBlob(key=key, mime_type="video/mp4", data=p.read_bytes()))
-            inserted += 1
+            existing = MediaBlob.query.filter_by(key=key).first()
+            if existing is None:
+                db.session.add(MediaBlob(key=key, mime_type="video/mp4", data=p.read_bytes()))
+                inserted += 1
+            elif force:
+                existing.mime_type = "video/mp4"
+                existing.data = p.read_bytes()
+                updated += 1
 
     if include_images and HOUSES_DIR.exists():
         for p in sorted(HOUSES_DIR.glob("img*.jpg")):
             key = f"houses/{p.name}"
-            if MediaBlob.query.filter_by(key=key).first() is not None:
-                continue
-            db.session.add(MediaBlob(key=key, mime_type="image/jpeg", data=p.read_bytes()))
-            inserted += 1
+            existing = MediaBlob.query.filter_by(key=key).first()
+            if existing is None:
+                db.session.add(MediaBlob(key=key, mime_type="image/jpeg", data=p.read_bytes()))
+                inserted += 1
+            elif force:
+                existing.mime_type = "image/jpeg"
+                existing.data = p.read_bytes()
+                updated += 1
 
     db.session.commit()
-    return inserted
+    return inserted, updated
 
 
 @app.route("/media/<path:key>", methods=["GET"])
@@ -766,8 +775,19 @@ def seed_media_from_public():
 
     include_videos = str(request.args.get("videos") or "1") in {"1", "true", "yes"}
     include_images = str(request.args.get("images") or "1") in {"1", "true", "yes"}
-    inserted = _seed_media_from_public(include_videos=include_videos, include_images=include_images)
-    return jsonify({"inserted": inserted, "videos": bool(include_videos), "images": bool(include_images)})
+    force = str(request.args.get("force") or "0") in {"1", "true", "yes"}
+    inserted, updated = _seed_media_from_public(
+        include_videos=include_videos, include_images=include_images, force=force
+    )
+    return jsonify(
+        {
+            "inserted": inserted,
+            "updated": updated,
+            "force": bool(force),
+            "videos": bool(include_videos),
+            "images": bool(include_images),
+        }
+    )
 
 
 @app.route("/seed/ml", methods=["POST"])
