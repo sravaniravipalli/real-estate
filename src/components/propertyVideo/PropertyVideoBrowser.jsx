@@ -57,8 +57,15 @@ export default function PropertyVideoBrowser() {
   }, []);
 
   const filteredVideos = useMemo(() => {
-    if (!selectedCategory) return videos;
-    return videos.filter((v) => v.type === selectedCategory);
+    const scoped = selectedCategory ? videos.filter((v) => v.type === selectedCategory) : videos;
+
+    return [...scoped].sort((a, b) => {
+      const aId = Number(a?.propertyId ?? a?.property_id ?? a?.propertyID ?? a?.id);
+      const bId = Number(b?.propertyId ?? b?.property_id ?? b?.propertyID ?? b?.id);
+      const aNum = Number.isFinite(aId) ? aId : Number.MAX_SAFE_INTEGER;
+      const bNum = Number.isFinite(bId) ? bId : Number.MAX_SAFE_INTEGER;
+      return aNum - bNum;
+    });
   }, [videos, selectedCategory]);
 
   const mostViewed = useMemo(() => {
