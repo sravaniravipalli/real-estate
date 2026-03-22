@@ -54,14 +54,43 @@ def add_cors_headers(response):
 def healthz():
     db_name = "unknown"
     db_ok = False
+    pwd_len = None
+    migrated = None
     try:
         db_name = db.engine.url.get_backend_name() or "unknown"
         db.session.execute(text("SELECT 1"))
         db_ok = True
+
+        if db_name == "postgresql":
+            pwd_len = (
+                db.session.execute(
+                    text(
+                        "SELECT character_maximum_length "
+                        "FROM information_schema.columns "
+                        "WHERE table_schema='public' AND table_name='users' AND column_name='password_hash'"
+                    )
+                ).scalar()
+            )
+            if pwd_len is not None and int(pwd_len) < 255:
+                try:
+                    db.session.execute(
+                        text("ALTER TABLE IF EXISTS users ALTER COLUMN password_hash TYPE VARCHAR(255)")
+                    )
+                    db.session.commit()
+                    migrated = True
+                    pwd_len = 255
+                except Exception:
+                    db.session.rollback()
+                    migrated = False
     except Exception:
         db_ok = False
 
-    return jsonify({"ok": True, "db": db_name, "db_ok": bool(db_ok)}), 200
+    payload = {"ok": True, "db": db_name, "db_ok": bool(db_ok)}
+    if pwd_len is not None:
+        payload["users_password_hash_len"] = int(pwd_len)
+    if migrated is not None:
+        payload["users_password_hash_migrated"] = bool(migrated)
+    return jsonify(payload), 200
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -115,14 +144,18 @@ else:
 db = SQLAlchemy(app)
 
 with app.app_context():
-    try:
-        # Lightweight migration: widen password_hash column if needed (Postgres).
-        if not app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite:"):
-            db.session.execute(text("ALTER TABLE users ALTER COLUMN password_hash TYPE VARCHAR(255)"))
-            db.session.commit()
-    except Exception:
-        db.session.rollback()
     db.create_all()
+
+    # Lightweight migration: widen password_hash column if needed (Postgres).
+    if not app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite:"):
+        try:
+            db.session.execute(
+                text("ALTER TABLE IF EXISTS users ALTER COLUMN password_hash TYPE VARCHAR(255)")
+            )
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            app.logger.exception("Failed to migrate users.password_hash to VARCHAR(255)")
 
 
 class User(db.Model):
