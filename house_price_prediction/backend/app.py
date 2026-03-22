@@ -42,10 +42,19 @@ def handle_unexpected_error(e):
         payload["detail"] = str(e)
     return jsonify(payload), 500
 
+
+@app.before_request
+def handle_global_options():
+    # Make CORS preflight succeed for all routes (mobile browsers can be stricter).
+    if request.method == "OPTIONS":
+        return Response(status=200)
+
+
 @app.after_request
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    requested_headers = request.headers.get("Access-Control-Request-Headers")
+    response.headers['Access-Control-Allow-Headers'] = requested_headers or 'Content-Type,Authorization,Accept,Origin,X-Requested-With'
     response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
     return response
 
