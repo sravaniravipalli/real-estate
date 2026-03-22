@@ -69,7 +69,7 @@ export default function Form({ setPropertyData, setLoading, setJsxData }) {
     
     try {
       // Option 1: Try backend ML prediction first
-      const mlPrediction = await fetch('http://localhost:5000/predict', {
+      const mlPrediction = await fetch('https://real-estate-production-1eda.up.railway.app/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

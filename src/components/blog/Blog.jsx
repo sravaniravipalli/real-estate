@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 const Blog = () => {
   const [blogs, setBlogs] = useState([]);
   const [loadError, setLoadError] = useState("");
-  const BACKEND_URL = import.meta.env.VITE_REACT_API_URL || "http://localhost:5000";
+  const BACKEND_URL = "https://real-estate-production-1eda.up.railway.app";
   useEffect(() => {
     setLoadError("");
     fetch(`${BACKEND_URL}/blogs`)

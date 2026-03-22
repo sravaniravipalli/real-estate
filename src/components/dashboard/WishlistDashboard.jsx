@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "context/authProvider/AuthProvider";
 
-const BACKEND_URL = import.meta.env.VITE_REACT_API_URL || "http://localhost:5000";
+const BACKEND_URL = "https://real-estate-production-1eda.up.railway.app";
 
 export default function WishlistDashboard() {
   const [wishlist, setWishlist] = useState([]);
