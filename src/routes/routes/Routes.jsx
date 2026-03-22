@@ -3,7 +3,7 @@ import PropertyForm from "components/dashboard/propertyForm/PropertyForm";
 import DashboardLayout from "layout/dasboardLayout/DashboardLayout";
 import NotFound from "pages/notFound/NotFound";
 import Properties from "pages/properties/Properties";
-import Register from "pages/signUP/Register";
+import Register from "pages/SignUP/Register";
 import { createBrowserRouter } from "react-router-dom";
 import PrivateRoute from "routes/privateRoute/PrivateRoute";
 import Main from "../../layout/Main";
