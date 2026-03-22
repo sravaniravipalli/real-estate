@@ -31,7 +31,8 @@ def _detect_repo_root() -> Path:
     for parent in BASE_DIR.parents:
         if (parent / "public").exists():
             return parent
-    return BASE_DIR.parents[1]
+    # Fallback: return BASE_DIR itself if no parent found
+    return BASE_DIR
 
 
 REPO_ROOT = _detect_repo_root()
