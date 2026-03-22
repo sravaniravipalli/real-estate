@@ -14,12 +14,18 @@ import sklearn
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from werkzeug.security import generate_password_hash, check_password_hash
 from sklearn.exceptions import InconsistentVersionWarning
 
 app = Flask(__name__)
 
 # ✅ FIXED: Allow all origins (fixes mobile CORS issues)
 CORS(app)
+
+# JWT Configuration
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'your-secret-key')  # Change in production
+jwt = JWTManager(app)
 
 @app.after_request
 def add_cors_headers(response):
@@ -65,6 +71,16 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite:"):
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"connect_args": {"timeout": 30}}
 db = SQLAlchemy(app)
+
+
+class User(db.Model):
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    display_name = db.Column(db.String(120), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
 
 class Property(db.Model):
@@ -275,6 +291,47 @@ def _maybe_migrate_json_to_db():
 _maybe_migrate_json_to_db()
 
 
+# -------------------- Auth --------------------
+
+@app.route("/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    display_name = data.get('displayName', '')
+
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "Email already registered"}), 400
+
+    password_hash = generate_password_hash(password)
+    new_user = User(email=email, password_hash=password_hash, display_name=display_name)
+    db.session.add(new_user)
+    db.session.commit()
+
+    access_token = create_access_token(identity=email)
+    return jsonify({"access_token": access_token, "user": {"email": email, "displayName": display_name}}), 201
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user or not check_password_hash(user.password_hash, password):
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    access_token = create_access_token(identity=email)
+    return jsonify({"access_token": access_token, "user": {"email": email, "displayName": user.display_name}}), 200
+
+
 # -------------------- Predict --------------------
 
 @app.route("/predict", methods=["GET", "POST", "OPTIONS"])
@@ -336,7 +393,9 @@ def get_properties():
 
 
 @app.route("/properties", methods=["POST"])
+@jwt_required()
 def add_property():
+    current_user = get_jwt_identity()
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Property data is required"}), 400
@@ -360,7 +419,11 @@ def add_property():
 # -------------------- Wishlist --------------------
 
 @app.route("/wishlist/<user_id>", methods=["GET"])
+@jwt_required()
 def get_wishlist(user_id):
+    current_user = get_jwt_identity()
+    if current_user != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
     items = (
         WishlistItem.query.filter_by(user_id=str(user_id))
         .order_by(WishlistItem.added_at.desc())
@@ -370,7 +433,11 @@ def get_wishlist(user_id):
 
 
 @app.route("/wishlist/<user_id>", methods=["POST"])
+@jwt_required()
 def add_to_wishlist(user_id):
+    current_user = get_jwt_identity()
+    if current_user != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
     data = request.get_json(silent=True)
     if not data or "id" not in data:
         return jsonify({"error": "Property data with id is required"}), 400
@@ -400,7 +467,11 @@ def add_to_wishlist(user_id):
 
 
 @app.route("/wishlist/<user_id>/<property_id>", methods=["DELETE"])
+@jwt_required()
 def remove_from_wishlist(user_id, property_id):
+    current_user = get_jwt_identity()
+    if current_user != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
     deleted = WishlistItem.query.filter_by(
         user_id=str(user_id), property_external_id=str(property_id)
     ).delete()

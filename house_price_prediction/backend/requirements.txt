@@ -7,3 +7,5 @@ numpy
 pandas
 scikit-learn==1.8.0
 requests
+flask-jwt-extended
+werkzeug
