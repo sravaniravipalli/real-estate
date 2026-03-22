@@ -72,6 +72,9 @@ if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite:"):
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"connect_args": {"timeout": 30}}
 db = SQLAlchemy(app)
 
+with app.app_context():
+    db.create_all()
+
 
 class User(db.Model):
     __tablename__ = "users"
