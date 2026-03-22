@@ -927,28 +927,53 @@ def seed_ml_from_gdrive():
     if unauthorized is not None:
         return unauthorized
     try:
-        model_url = "https://drive.google.com/uc?export=download&id=11UxplULQwU_hU2F31K97oqIq_yCzdtrE"
-
-        # Download model with confirmation token handling for large files
+        import re
+        file_id = "11UxplULQwU_hU2F31K97oqIq_yCzdtrE"
         session = requests.Session()
-        response = session.get(model_url, stream=True)
 
-        # Handle Google Drive large file warning confirmation
-        token = None
-        for key, value in response.cookies.items():
-            if key.startswith("download_warning"):
-                token = value
+        # Step 1: Initial request to get confirmation token
+        url = f"https://drive.google.com/uc?export=download&id={file_id}"
+        response = session.get(url, stream=True)
+
+        # Step 2: Extract confirmation token from cookies
+        confirm_token = None
+        for k, v in response.cookies.items():
+            if k.startswith("download_warning"):
+                confirm_token = v
                 break
-        if token:
-            response = session.get(model_url + f"&confirm={token}", stream=True)
+
+        # Step 3: Also try extracting from HTML content (newer GDrive format)
+        if not confirm_token:
+            content_preview = response.content[:20000].decode("utf-8", errors="ignore")
+            match = re.search(r'confirm=([0-9A-Za-z_\-]+)', content_preview)
+            if match:
+                confirm_token = match.group(1)
+            # Try UUID format token
+            match2 = re.search(r'"([0-9A-Za-z_\-]{20,})"', content_preview)
+            if not confirm_token and match2:
+                confirm_token = match2.group(1)
+
+        # Step 4: Download with confirmation token
+        if confirm_token:
+            download_url = f"https://drive.google.com/uc?export=download&id={file_id}&confirm={confirm_token}"
+        else:
+            # Try direct download without confirmation
+            download_url = f"https://drive.usercontent.google.com/download?id={file_id}&export=download&authuser=0&confirm=t"
+
+        response = session.get(download_url, stream=True)
 
         model_data = b""
-        for chunk in response.iter_content(chunk_size=32768):
+        for chunk in response.iter_content(chunk_size=65536):
             if chunk:
                 model_data += chunk
 
-        if len(model_data) < 1000:
-            return jsonify({"error": "Model download failed or too small", "size": len(model_data)}), 500
+        if len(model_data) < 100000:
+            preview = model_data[:300].decode("utf-8", errors="ignore")
+            return jsonify({
+                "error": "Download too small - got HTML instead of model file",
+                "size": len(model_data),
+                "preview": preview
+            }), 500
 
         existing_model = MLArtifact.query.filter_by(key="house_price_model.pkl").first()
         if existing_model is None:
