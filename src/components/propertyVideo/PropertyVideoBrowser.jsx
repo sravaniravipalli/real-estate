@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-
-const BACKEND_URL = "https://real-estate-production-1eda.up.railway.app";
+import { apiFetch, resolveApiUrl } from "lib/apiClient";
 
 export default function PropertyVideoBrowser() {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -18,9 +17,9 @@ export default function PropertyVideoBrowser() {
         setLoadError("");
 
         const [videosRes, categoriesRes, propertiesRes] = await Promise.all([
-          fetch(`${BACKEND_URL}/videos`),
-          fetch(`${BACKEND_URL}/video-categories`),
-          fetch(`${BACKEND_URL}/properties`),
+          apiFetch("/videos"),
+          apiFetch("/video-categories"),
+          apiFetch("/properties"),
         ]);
 
         if (!videosRes.ok) throw new Error("Failed to load videos from backend.");
@@ -41,7 +40,13 @@ export default function PropertyVideoBrowser() {
           return acc;
         }, {});
 
-        setVideos(loadedVideos);
+        const normalizedVideos = (loadedVideos || []).map((v) => ({
+          ...v,
+          thumbnail: resolveApiUrl(v?.thumbnail),
+          videoUrl: resolveApiUrl(v?.videoUrl),
+        }));
+
+        setVideos(normalizedVideos);
         setCategories(loadedCategories);
         setPropertiesById(byId);
       } catch (e) {
@@ -146,7 +151,7 @@ export default function PropertyVideoBrowser() {
             >
               <figure className="relative overflow-hidden rounded-t-xl bg-black">
                 <img
-                  src={thumbnail}
+                  src={resolveApiUrl(thumbnail)}
                   alt={title}
                   className="w-full h-32 object-cover hover:opacity-80 transition-opacity"
                 />
@@ -188,7 +193,7 @@ export default function PropertyVideoBrowser() {
               onClick={() => setIsPlaying(video.id)}
             >
               <img
-                src={video.thumbnail}
+                src={resolveApiUrl(video.thumbnail)}
                 alt={video.title}
                 className="w-full h-24 object-cover group-hover:scale-110 transition-transform"
               />
@@ -233,7 +238,7 @@ export default function PropertyVideoBrowser() {
                     className="w-full rounded-lg bg-black mb-2"
                     poster={playingVideo.thumbnail || prop?.propertyImage}
                   >
-                    <source src={playingVideo.videoUrl} type="video/mp4" />
+                    <source src={resolveApiUrl(playingVideo.videoUrl)} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
                   <div className="text-xs text-gray-600">

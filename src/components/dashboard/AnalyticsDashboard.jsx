@@ -156,10 +156,10 @@ export default function AnalyticsDashboard() {
 
               {locationFilter && (
                 <div className="mt-4">
-                  <p className="text-gray-600 mb-3">
-                    Found <span className="font-bold text-blue-600">{filteredProperties.length}</span> properties for "
-                    {locationFilter}"
-                  </p>
+                    <p className="text-gray-600 mb-3">
+                      Found <span className="font-bold text-blue-600">{filteredProperties.length}</span> properties for &quot;
+                      {locationFilter}&quot;
+                    </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {filteredProperties.slice(0, 6).map((prop) => (
                       <div key={prop._id || prop.id} className="border rounded-lg p-3 flex gap-3 items-center">

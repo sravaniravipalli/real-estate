@@ -23,9 +23,15 @@ describe('Property Filters', () => {
 
   describe('getUniqueLocations', () => {
     it('should return array of unique locations', () => {
-      const locations = getUniqueLocations();
+      const locations = getUniqueLocations([
+        { location: "Vizag" },
+        { location: "Hyderabad" },
+        { location: "Vizag" },
+        { location: "" },
+        {},
+      ]);
       expect(Array.isArray(locations)).toBe(true);
-      expect(locations.length).toBeGreaterThan(0);
+      expect(locations).toEqual(["Hyderabad", "Vizag"]);
     });
   });
 });

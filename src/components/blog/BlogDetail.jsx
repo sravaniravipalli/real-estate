@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
+import { apiFetch } from "lib/apiClient";
 
 export default function BlogDetail() {
   const [blog, setBlog] = useState({});
   const [loadError, setLoadError] = useState("");
   const { _id } = useParams();
-  const BACKEND_URL = "https://real-estate-production-1eda.up.railway.app";
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoadError("");
-        const response = await fetch(`${BACKEND_URL}/blogs/${_id}`);
+        const response = await apiFetch(`/blogs/${encodeURIComponent(_id)}`);
         if (!response.ok) throw new Error("Blog not found");
         const data = await response.json();
         setBlog(data.data || data.blog || {});

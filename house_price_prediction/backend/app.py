@@ -335,6 +335,20 @@ def login():
     return jsonify({"access_token": access_token, "user": {"email": email, "displayName": user.display_name}}), 200
 
 
+@app.route("/me", methods=["GET"])
+@jwt_required()
+def me():
+    identity = get_jwt_identity()
+    if not identity:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user = User.query.filter_by(email=str(identity)).first()
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify({"user": {"email": user.email, "displayName": user.display_name or ""}}), 200
+
+
 # -------------------- Predict --------------------
 
 @app.route("/predict", methods=["GET", "POST", "OPTIONS"])

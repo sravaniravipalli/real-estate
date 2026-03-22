@@ -3,7 +3,6 @@ import {
   getUniqueLocations,
   filterPropertiesByLocationAndPrice,
   getPriceStatistics,
-  parsePrice,
   formatPrice,
   recommendProperties,
   predictAvailabilityInLocation,

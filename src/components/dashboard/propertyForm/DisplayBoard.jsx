@@ -54,7 +54,7 @@ export default function DisplayBoard({ propertyData, loading, jsxData, setJsxDat
       .then((data) => {
         setJsxData(data?.data);
         setMediaLoading(false);
-      }).catch((err) => {
+      }).catch(() => {
         // Handle error gracefully
         setMediaLoading(false);
       })

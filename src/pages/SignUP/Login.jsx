@@ -22,32 +22,24 @@ export default function Login() {
   const location = useLocation();
   const from = location?.state?.from?.pathname || "/";
   useTitle("LogIn");
-  const handleLogin = (data) => {
+  const handleLogin = async (data) => {
     setLogInError("");
     setPasswordError("");
-    signIn(data.email, data.password)
-      .then((result) => {
-        const user = result.user;
-        toast("Log In Successful 👍", {
-          style: {
-            border: "1px solid #ffffff",
-            backgroundColor: "#9f95e9",
-          },
-        });
-        navigate(from, { replace: true });
-        reset();
-      })
-      .catch((err) => {
-        setPasswordError(err.message);
-        setLogInError(err.message);
-      });
+    try {
+      await signIn(data.email, data.password);
+      navigate(from, { replace: true });
+      reset();
+    } catch (err) {
+      setPasswordError(err.message);
+      setLogInError(err.message);
+    }
   };
 
   // register with Google
   const handleGoogleSignIn = () => {
     providerLogin(googleProvider)
-      .then((result) => {
-        const user = result.user;
+      .then(() => {
+
         toast("Log In Successful 👍", {
           style: {
             border: "1px solid #ffffff",
@@ -56,7 +48,7 @@ export default function Login() {
         });
         navigate(from, { replace: true });
       })
-      .catch((err) => {
+      .catch(() => {
         toast.error("Login failed. Please try again.");
       });
   };
@@ -64,8 +56,8 @@ export default function Login() {
   // register with Github
   const handleGithubSignIn = () => {
     providerLogin(githubProvider)
-      .then((result) => {
-        const user = result.user;
+      .then(() => {
+
         toast("Log In Successful 👍", {
           style: {
             border: "1px solid #ffffff",
@@ -74,7 +66,7 @@ export default function Login() {
         });
         navigate(from, { replace: true });
       })
-      .catch((err) => {
+      .catch(() => {
         // Handle Github sign in error
       });
   };

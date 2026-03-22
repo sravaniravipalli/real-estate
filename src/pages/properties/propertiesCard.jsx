@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "context/authProvider/AuthProvider";
+import { apiFetch } from "lib/apiClient";
 
-const BACKEND_URL = "https://real-estate-production-1eda.up.railway.app";
 export default function PropertiesCard({ product, setPropertyData }) {
   const { _id, userName, description, propertyImage, valuationCost, location, city } = product;
   const { user } = useContext(AuthContext);
@@ -28,7 +28,9 @@ export default function PropertiesCard({ product, setPropertyData }) {
 
       // Remove from backend
       try {
-        await fetch(`${BACKEND_URL}/wishlist/${userId}/${_id}`, { method: "DELETE" });
+        await apiFetch(`/wishlist/${encodeURIComponent(userId)}/${encodeURIComponent(_id)}`, {
+          method: "DELETE",
+        });
       } catch (err) {
         console.warn("Backend unavailable, removed from localStorage only");
       }
@@ -50,7 +52,7 @@ export default function PropertiesCard({ product, setPropertyData }) {
 
       // Save to backend
       try {
-        await fetch(`${BACKEND_URL}/wishlist/${userId}`, {
+        await apiFetch(`/wishlist/${encodeURIComponent(userId)}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newItem),

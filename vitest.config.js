@@ -1,10 +1,12 @@
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
 import jsconfigPaths from 'vite-jsconfig-paths';
 import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [react(), jsconfigPaths()],
+  plugins: [jsconfigPaths()],
+  esbuild: {
+    jsx: 'automatic',
+  },
   test: {
     globals: true,
     environment: 'jsdom',

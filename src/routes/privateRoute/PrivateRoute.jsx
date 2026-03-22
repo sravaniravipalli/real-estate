@@ -7,11 +7,18 @@ export default function PrivateRoute({ children }) {
   const location = useLocation();
   const { user, loading } = useContext(AuthContext);
 
+  let hasToken = false;
+  try {
+    hasToken = Boolean(localStorage.getItem("accessToken"));
+  } catch {
+    hasToken = false;
+  }
+
   if (loading) {
     return <Loading />
   }
 
-  if (user) {
+  if (user || hasToken) {
     return children;
   }
 

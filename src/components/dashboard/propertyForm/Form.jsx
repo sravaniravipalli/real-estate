@@ -1,5 +1,6 @@
 import { generatePropertyInfo } from "api/ai";
 import { useState } from "react";
+import { apiFetch } from "lib/apiClient";
 
 export default function Form({ setPropertyData, setLoading, setJsxData }) {
   const [formData, setFormData] = useState({
@@ -69,7 +70,7 @@ export default function Form({ setPropertyData, setLoading, setJsxData }) {
     
     try {
       // Option 1: Try backend ML prediction first
-      const mlPrediction = await fetch('https://real-estate-production-1eda.up.railway.app/predict', {
+      const mlPrediction = await apiFetch('/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

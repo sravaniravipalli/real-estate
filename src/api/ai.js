@@ -1,9 +1,10 @@
 import { fetchWithRetry, handleApiError } from "../utils/apiUtils";
+import { resolveApiUrl } from "lib/apiClient";
 
 export const generatePropertyInfo = async (promptData) => {
   try {
     const response = await fetchWithRetry(
-      `https://real-estate-production-1eda.up.railway.app/openai/generateTextAndImage`,
+      resolveApiUrl("/openai/generateTextAndImage"),
       {
         method: "POST",
         headers: {
@@ -25,7 +26,7 @@ export const generatePropertyInfo = async (promptData) => {
 export const fetchProducts = async () => {
   try {
     const response = await fetchWithRetry(
-      `https://real-estate-production-1eda.up.railway.app/properties`,
+      resolveApiUrl("/properties"),
       {},
       15000 // 15 second timeout
     );
@@ -42,7 +43,7 @@ export const fetchProducts = async () => {
 export const savePropertyToDb = async (propertyData) => {
   try {
     const response = await fetchWithRetry(
-      `https://real-estate-production-1eda.up.railway.app/properties`,
+      resolveApiUrl("/properties"),
       {
         method: "POST",
         headers: {
@@ -63,7 +64,7 @@ export const savePropertyToDb = async (propertyData) => {
 export const generateSocialMediaPoster = async (featureData) => {
   try {
     const response = await fetchWithRetry(
-      `https://real-estate-production-1eda.up.railway.app/openai/generateSocialMediaPoster`,
+      resolveApiUrl("/openai/generateSocialMediaPoster"),
       {
         method: "POST",
         headers: {

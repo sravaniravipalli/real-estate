@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import { useNavigate, useRouteError } from "react-router-dom";
 
 export default function NotFound() {

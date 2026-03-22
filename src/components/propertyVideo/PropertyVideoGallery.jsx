@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
-
-const BACKEND_URL = "https://real-estate-production-1eda.up.railway.app";
+import { useEffect, useState } from "react";
+import { apiFetch, resolveApiUrl } from "lib/apiClient";
 
 export default function PropertyVideoGallery({ propertyId }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,13 +9,18 @@ export default function PropertyVideoGallery({ propertyId }) {
     if (!propertyId) return;
     const load = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/videos/by-property/${propertyId}`);
+        const res = await apiFetch(`/videos/by-property/${encodeURIComponent(propertyId)}`);
         if (!res.ok) {
           setVideo(null);
           return;
         }
         const data = await res.json();
-        setVideo(data.data || data.video || null);
+        const v = data.data || data.video || null;
+        if (v) {
+          v.thumbnail = resolveApiUrl(v.thumbnail);
+          v.videoUrl = resolveApiUrl(v.videoUrl);
+        }
+        setVideo(v);
       } catch {
         setVideo(null);
       }
@@ -30,7 +34,7 @@ export default function PropertyVideoGallery({ propertyId }) {
     <div className="property-video-section w-full max-w-xs rounded-xl overflow-hidden shadow-md bg-white">
       <div className="relative w-full h-44 overflow-hidden bg-black">
         <img
-          src={video.thumbnail}
+          src={resolveApiUrl(video.thumbnail)}
           alt={video.title}
           className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
           onClick={() => setIsModalOpen(true)}
@@ -68,7 +72,7 @@ export default function PropertyVideoGallery({ propertyId }) {
               className="w-full rounded-lg bg-black"
               poster={video.thumbnail}
             >
-              <source src={video.videoUrl} type="video/mp4" />
+              <source src={resolveApiUrl(video.videoUrl)} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
             <div className="mt-4 text-sm text-gray-600">

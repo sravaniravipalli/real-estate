@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PredictionForm from '../../components/prediction/PredictionForm';
 import PredictionResult from '../../components/prediction/PredictionResult';
 import useTitle from '../../hook/useTitle';
+import { apiFetch } from 'lib/apiClient';
 
 export default function PricePrediction() {
   useTitle('Price Prediction');
@@ -15,7 +16,7 @@ export default function PricePrediction() {
     setPrediction(null);
 
     try {
-      const response = await fetch('https://real-estate-production-1eda.up.railway.app/predict', {
+      const response = await apiFetch('/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -82,7 +83,7 @@ export default function PricePrediction() {
           {prediction && <PredictionResult price={prediction} onReset={handleReset} />}
           {!loading && !prediction && (
             <div className="flex items-center justify-center h-64 text-gray-500 text-center">
-              <p>Enter property details and click "Get Prediction" to see the estimated price</p>
+              <p>Enter property details and click &quot;Get Prediction&quot; to see the estimated price</p>
             </div>
           )}
         </div>

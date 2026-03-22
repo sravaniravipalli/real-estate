@@ -13,39 +13,22 @@ const Register = () => {
     handleSubmit,
     reset,
   } = useForm();
-  const { createUser, updateUser, providerLogin } = useContext(AuthContext);
+  const { createUser, providerLogin } = useContext(AuthContext);
   const [signupError, setSignUpError] = useState("");
   const googleProvider = new GoogleAuthProvider();
   const githubProvider = new GithubAuthProvider();
   const [isChecked, setIsChecked] = useState(false);
   const navigate = useNavigate();
   useTitle("Register");
-  const handleRegister = (data) => {
+  const handleRegister = async (data) => {
     setSignUpError("");
-    createUser(data.email, data.password, data.username)
-      .then((result) => {
-        const user = result.user;
-        const userName = {
-          displayName: data.username,
-        };
-        updateUser(userName)
-          .then(() => {})
-          .catch((err) => {
-            // Handle update error
-          });
-        toast("Your registration is Successful (•‿•)", {
-          style: {
-            border: "1px solid #fff",
-            backgroundColor: "#4cd137",
-            color: "#000",
-          },
-        });
-        navigate("/dashboard");
-        reset();
-      })
-      .catch((err) => {
-        setSignUpError(err.message);
-      });
+    try {
+      await createUser(data.email, data.password, data.username);
+      navigate("/dashboard");
+      reset();
+    } catch (err) {
+      setSignUpError(err.message);
+    }
   };
 
   // Privacy agree checkbox
@@ -56,8 +39,8 @@ const Register = () => {
   // Signup with Google
   const handleGoogleSignIn = () => {
     providerLogin(googleProvider)
-      .then((result) => {
-        const user = result.user;
+      .then(() => {
+
         toast("Your registration is Successful (•‿•)", {
           style: {
             border: "1px solid #fff",
@@ -67,7 +50,7 @@ const Register = () => {
         });
         navigate("/dashboard");
       })
-      .catch((err) => {
+      .catch(() => {
         // Handle Google sign in error
       });
   };
@@ -75,8 +58,8 @@ const Register = () => {
   // Signup with Github
   const handleGithubSignIn = () => {
     providerLogin(githubProvider)
-      .then((result) => {
-        const user = result.user;
+      .then(() => {
+
         toast("Your registration is Successful (•‿•)", {
           style: {
             border: "1px solid #fff",
@@ -86,7 +69,7 @@ const Register = () => {
         });
         navigate("/dashboard");
       })
-      .catch((err) => {
+      .catch(() => {
         // Handle Github sign in error
       });
   };

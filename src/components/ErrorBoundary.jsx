@@ -6,7 +6,7 @@ class ErrorBoundary extends React.Component {
     this.state = { hasError: false, error: null, errorInfo: null };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
@@ -34,9 +34,9 @@ class ErrorBoundary extends React.Component {
               Oops! Something went wrong
             </h2>
             <p className="mt-2 text-center text-gray-600">
-              We're sorry for the inconvenience. Please try refreshing the page.
+              We&apos;re sorry for the inconvenience. Please try refreshing the page.
             </p>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details className="mt-4 p-4 bg-gray-50 rounded border border-gray-200">
                 <summary className="cursor-pointer text-sm font-medium text-gray-700">
                   Error Details

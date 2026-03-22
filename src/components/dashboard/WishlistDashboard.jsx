@@ -1,7 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "context/authProvider/AuthProvider";
-
-const BACKEND_URL = "https://real-estate-production-1eda.up.railway.app";
+import { apiFetch } from "lib/apiClient";
 
 export default function WishlistDashboard() {
   const [wishlist, setWishlist] = useState([]);
@@ -14,7 +13,7 @@ export default function WishlistDashboard() {
       setLoadingWishlist(true);
       const userId = user?.uid || user?.email || "guest";
       try {
-        const res = await fetch(`${BACKEND_URL}/wishlist/${userId}`);
+        const res = await apiFetch(`/wishlist/${encodeURIComponent(userId)}`);
         if (res.ok) {
           const data = await res.json();
           setWishlist(data.wishlist || []);
@@ -39,7 +38,9 @@ export default function WishlistDashboard() {
     setWishlist(updated);
     localStorage.setItem("wishlist", JSON.stringify(updated));
     try {
-      await fetch(`${BACKEND_URL}/wishlist/${userId}/${id}`, { method: "DELETE" });
+      await apiFetch(`/wishlist/${encodeURIComponent(userId)}/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
     } catch (err) {
       console.warn("Backend unavailable, removed from localStorage only");
     }

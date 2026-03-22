@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import BlogCard from "./BlogCard";
 import useTitle from "hook/useTitle";
 import { Link } from "react-router-dom";
+import { apiFetch } from "lib/apiClient";
 
 const Blog = () => {
   const [blogs, setBlogs] = useState([]);
   const [loadError, setLoadError] = useState("");
-  const BACKEND_URL = "https://real-estate-production-1eda.up.railway.app";
   useEffect(() => {
     setLoadError("");
-    fetch(`${BACKEND_URL}/blogs`)
+    apiFetch("/blogs")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load blogs from backend");
         return res.json();

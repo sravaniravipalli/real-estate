@@ -1,7 +1,6 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "context/authProvider/AuthProvider";
-
-const BACKEND_URL = "https://real-estate-production-1eda.up.railway.app";
+import { apiFetch } from "lib/apiClient";
 
 export default function AddPropertyForm({ onPropertyAdded }) {
   const { user } = useContext(AuthContext);
@@ -135,9 +134,11 @@ export default function AddPropertyForm({ onPropertyAdded }) {
       };
 
       // Save to backend (DB)
-      const res = await fetch(`${BACKEND_URL}/properties`, {
+      const res = await apiFetch("/properties", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(propertyData),
       });
       if (!res.ok) {

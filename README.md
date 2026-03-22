@@ -103,7 +103,20 @@ Each team member's contributions were vital to the successful development and im
 Testing is an integral part of our RealEstateGenius project. We conduct comprehensive unit, integration, and end-to-end testing to ensure quality and reliability. Test-driven development, automated testing using frameworks like Jest and React Testing Library, and continuous integration pipelines are employed to identify and address any issues, delivering a bug-free site for our users.
 
 ## Deployment
-RealEstateGenius client site is deployed on Netlify, ensuring seamless accessibility and scalability. The server site is deployed on render.com, guaranteeing reliable server-side functionality. Continuous integration and deployment pipelines streamline the process, allowing for efficient updates and enhancements. The deployment setup ensures a smooth user experience and reliable performance for RealEstateGenius.
+For production, build the frontend with the backend base URL baked in via an environment variable:
+
+```env
+VITE_REACT_API_URL=https://your-backend-domain.example
+```
+
+On the backend, set at least:
+
+```env
+JWT_SECRET_KEY=change-me
+DATABASE_URL=postgresql://...   # optional; defaults to SQLite if unset
+```
+
+If deploying the frontend to Vercel, keep `vercel.json` so browser refresh/deep-links (e.g. `/dashboard`) route to `index.html`.
 
 ## Troubleshooting
 In the RealEstateGenius project, our team is dedicated to proactive troubleshooting. We address issues promptly by thoroughly investigating and diagnosing potential problems. We actively monitor error logs, user feedback, and conduct thorough testing to identify and resolve any issues that may arise. Through effective communication and collaboration, we maintain the stability and functionality of the site.

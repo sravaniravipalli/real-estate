@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchWithTimeout, fetchWithRetry, handleApiError, ApiError } from '../utils/apiUtils';
+import { fetchWithTimeout, handleApiError, ApiError } from '../utils/apiUtils';
 
 describe('API Utils', () => {
   beforeEach(() => {

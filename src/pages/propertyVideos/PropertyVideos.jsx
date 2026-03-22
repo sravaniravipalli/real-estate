@@ -1,4 +1,3 @@
-import React from 'react';
 import PropertyVideoBrowser from '../../components/propertyVideo/PropertyVideoBrowser';
 import useTitle from '../../hook/useTitle';
 

@@ -52,7 +52,7 @@ export default function Navbar() {
             </button>
           </div>
           <div className="hidden lg:flex lg:gap-x-12">
-            {user?.uid
+            {user?.email
               ? navigationWithDashboard.map((item) => (
                   <Link
                     key={item.name}
@@ -76,7 +76,7 @@ export default function Navbar() {
                   </Link>
                 ))}
           </div>
-          {user?.uid ? (
+          {user?.email ? (
             <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-[#7C6EE4]">
@@ -102,7 +102,7 @@ export default function Navbar() {
             </div>
           )}
           <span className="mx-5 hidden lg:block">|</span>
-          <Link to="/dashboard">
+          <Link to="/dashboard?tab=add-property">
             <button className="bg-[#7C6EE4] text-white text-sm p-[10px] rounded-sm hover:bg-gradient-to-r hover:from-blue-500 hover:to-[#7C6EE4] transition hidden lg:block">
               Create Property
             </button>
@@ -137,7 +137,7 @@ export default function Navbar() {
             <div className="mt-6 flow-root">
               <div className="">
                 <div className="space-y-1 py-4">
-                  {user?.uid
+                  {user?.email
                     ? navigationWithDashboard.map((item) => (
                         <Link
                           key={item.name}
@@ -161,7 +161,7 @@ export default function Navbar() {
                         </Link>
                       ))}
                 </div>
-                {user?.uid ? (
+                {user?.email ? (
                   <div className="py-6">
                     <button
                       onClick={logOut}
@@ -183,7 +183,7 @@ export default function Navbar() {
                     </Link>
                   </div>
                 )}
-                <Link to="/dashboard">
+                <Link to="/dashboard?tab=add-property">
                   <button className="bg-primary text-white text-sm py-[5px] px-[7px] rounded-sm hover:bg-gradient-to-r hover:from-blue-500 hover:to-[#7C6EE4] transition block lg:hidden">
                     Create Property
                   </button>

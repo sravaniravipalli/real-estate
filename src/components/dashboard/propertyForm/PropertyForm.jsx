@@ -17,9 +17,7 @@ export default function PropertyForm() {
 
   // Update active tab when URL changes
   useEffect(() => {
-    if (tabFromUrl) {
-      setActiveTab(tabFromUrl);
-    }
+    setActiveTab(tabFromUrl || "add-property");
   }, [tabFromUrl]);
 
   return (

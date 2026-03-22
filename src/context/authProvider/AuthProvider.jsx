@@ -1,166 +1,127 @@
 import { createContext, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { apiJson } from "lib/apiClient";
 
 export const AuthContext = createContext();
-
-let auth = null;
-
-try {
-  const app = require("context/firebase/firebase.config").default;
-  auth = require("firebase/auth").getAuth(app);
-} catch (error) {
-  auth = null;
-}
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
+      const token = localStorage.getItem('accessToken');
       const savedUser = localStorage.getItem('realEstateUser');
-      return savedUser ? JSON.parse(savedUser) : null;
+      return token && savedUser ? JSON.parse(savedUser) : null;
     } catch (error) {
       return null;
     }
   });
   const [loading, setLoading] = useState(true);
 
-  const getMockUsers = () => {
+  useEffect(() => {
+    const hydrate = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await apiJson("/me", { method: "GET" });
+        const backendUser = data?.user || null;
+        const normalizedUser = backendUser
+          ? { ...backendUser, uid: backendUser.uid || backendUser.email }
+          : null;
+        localStorage.setItem("realEstateUser", JSON.stringify(normalizedUser));
+        setUser(normalizedUser);
+      } catch {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("realEstateUser");
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    hydrate();
+  }, []);
+
+  const createUser = async (email, password, displayName = "") => {
+    setLoading(true);
     try {
-      const saved = localStorage.getItem('mockUsersDB');
-      return saved ? new Map(JSON.parse(saved)) : new Map();
+      const data = await apiJson("/register", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, displayName }),
+      });
+      const normalizedUser = data?.user
+        ? { ...data.user, uid: data.user.uid || data.user.email }
+        : null;
+      localStorage.setItem("accessToken", data.access_token);
+      localStorage.setItem("realEstateUser", JSON.stringify(normalizedUser));
+      setUser(normalizedUser);
+      toast.success('Registration successful!');
+      return normalizedUser;
     } catch (error) {
-      return new Map();
+      toast.error(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const saveMockUsers = (users) => {
+  const signIn = async (email, password) => {
+    setLoading(true);
     try {
-      localStorage.setItem('mockUsersDB', JSON.stringify([...users]));
-    } catch (error) {}
-  };
-
-  const createUser = (email, password, displayName = "") => {
-    setLoading(true);
-    return new Promise((resolve, reject) => {
-      try {
-        if (!auth) {
-          const users = getMockUsers();
-          if (users.has(email)) {
-            setLoading(false);
-            reject({ message: "Email already in use" });
-          } else {
-            const mockUser = { uid: mock_, email, displayName: displayName || "" };
-            users.set(email, { ...mockUser, password });
-            saveMockUsers(users);
-            setUser(mockUser);
-            localStorage.setItem('realEstateUser', JSON.stringify(mockUser));
-            setLoading(false);
-            resolve({ user: mockUser });
-          }
-        } else {
-          require("firebase/auth").createUserWithEmailAndPassword(auth, email, password)
-            .then((r) => { setLoading(false); resolve(r); })
-            .catch((e) => { setLoading(false); reject(e); });
-        }
-      } catch (error) { setLoading(false); reject(error); }
-    });
-  };
-
-  const signIn = (email, password) => {
-    setLoading(true);
-    return new Promise((resolve, reject) => {
-      try {
-        if (!auth) {
-          const users = getMockUsers();
-          const u = users.get(email);
-          if (u && u.password === password) {
-            const { password: _pw, ...userWithoutPassword } = u;
-            setUser(userWithoutPassword);
-            localStorage.setItem('realEstateUser', JSON.stringify(userWithoutPassword));
-            setLoading(false);
-            resolve({ user: userWithoutPassword });
-          } else {
-            setLoading(false);
-            reject({ message: "Invalid email or password" });
-          }
-        } else {
-          require("firebase/auth").signInWithEmailAndPassword(auth, email, password)
-            .then((r) => { setLoading(false); resolve(r); })
-            .catch((e) => { setLoading(false); reject(e); });
-        }
-      } catch (error) { setLoading(false); reject(error); }
-    });
-  };
-
-  const updateUser = (userInfo) => {
-    return new Promise((resolve, reject) => {
-      try {
-        if (!auth) { setTimeout(() => resolve({}), 100); }
-        else { require("firebase/auth").updateProfile(auth.currentUser, userInfo).then(resolve).catch(reject); }
-      } catch (error) { reject(error); }
-    });
-  };
-
-  const providerLogin = (provider) => {
-    setLoading(true);
-    return new Promise((resolve, reject) => {
-      try {
-        if (!auth) {
-          const mockUser = { uid: mock_, email: user_@example.com, displayName: "Test User" };
-          setUser(mockUser);
-          localStorage.setItem('realEstateUser', JSON.stringify(mockUser));
-          setLoading(false);
-          setTimeout(() => resolve({ user: mockUser }), 500);
-        } else {
-          require("firebase/auth").signInWithPopup(auth, provider)
-            .then((r) => { setLoading(false); resolve(r); })
-            .catch((e) => { setLoading(false); reject(e); });
-        }
-      } catch (error) { setLoading(false); reject(error); }
-    });
+      const data = await apiJson("/login", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const normalizedUser = data?.user
+        ? { ...data.user, uid: data.user.uid || data.user.email }
+        : null;
+      localStorage.setItem("accessToken", data.access_token);
+      localStorage.setItem("realEstateUser", JSON.stringify(normalizedUser));
+      setUser(normalizedUser);
+      toast.success('Login successful!');
+      return normalizedUser;
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logOut = () => {
-    toast.success("Logout Successful");
-    return new Promise((resolve, reject) => {
-      try {
-        if (!auth) {
-          setUser(null);
-          localStorage.removeItem('realEstateUser');
-          setLoading(false);
-          setTimeout(() => resolve({}), 100);
-        } else {
-          require("firebase/auth").signOut(auth)
-            .then((r) => { setLoading(false); resolve(r); })
-            .catch((e) => { setLoading(false); reject(e); });
-        }
-      } catch (error) { setLoading(false); reject(error); }
-    });
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('realEstateUser');
+    setUser(null);
+    toast.success('Logged out successfully!');
   };
 
-  useEffect(() => {
-    if (auth) {
-      try {
-        const unsubscribe = require("firebase/auth").onAuthStateChanged(auth, (currentUser) => {
-          setUser(currentUser);
-          if (currentUser) { localStorage.setItem('realEstateUser', JSON.stringify(currentUser)); }
-          else { localStorage.removeItem('realEstateUser'); }
-          setLoading(false);
-        });
-        return () => unsubscribe();
-      } catch (error) { setLoading(false); }
-    } else {
-      const savedUser = localStorage.getItem('realEstateUser');
-      if (savedUser) {
-        try { setUser(JSON.parse(savedUser)); }
-        catch (error) { localStorage.removeItem('realEstateUser'); }
-      }
-      setLoading(false);
-    }
-  }, []);
+  const providerLogin = async () => {
+    throw new Error("Social login is not configured for this app.");
+  };
 
-  const authInfo = { createUser, signIn, user, updateUser, logOut, providerLogin, loading, setLoading };
+  const updateUser = async () => {
+    return;
+  };
 
-  return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;
+  const value = {
+    user,
+    loading,
+    createUser,
+    signIn,
+    logOut,
+    providerLogin,
+    updateUser,
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export default AuthProvider;
