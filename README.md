@@ -118,6 +118,8 @@ DATABASE_URL=postgresql://...   # optional; defaults to SQLite if unset
 
 If deploying the frontend to Vercel, keep `vercel.json` so browser refresh/deep-links (e.g. `/dashboard`) route to `index.html`.
 
+Important for production: if you deploy the backend without `DATABASE_URL`, it will use SQLite (`app.db`) inside the container. On most hosts (Railway/Render/etc.) that file storage is not guaranteed to persist across redeploys/restarts, so users may “disappear”. Use a managed Postgres `DATABASE_URL` for persistent users/properties.
+
 ## Troubleshooting
 In the RealEstateGenius project, our team is dedicated to proactive troubleshooting. We address issues promptly by thoroughly investigating and diagnosing potential problems. We actively monitor error logs, user feedback, and conduct thorough testing to identify and resolve any issues that may arise. Through effective communication and collaboration, we maintain the stability and functionality of the site.
 

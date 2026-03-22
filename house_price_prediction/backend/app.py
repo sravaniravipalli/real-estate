@@ -298,10 +298,10 @@ _maybe_migrate_json_to_db()
 
 @app.route("/register", methods=["POST"])
 def register():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    display_name = data.get('displayName', '')
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email") or "").strip().lower()
+    password = str(data.get("password") or "")
+    display_name = str(data.get("displayName") or "")
 
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
@@ -315,14 +315,22 @@ def register():
     db.session.commit()
 
     access_token = create_access_token(identity=email)
-    return jsonify({"access_token": access_token, "user": {"email": email, "displayName": display_name}}), 201
+    return (
+        jsonify(
+            {
+                "access_token": access_token,
+                "user": {"id": new_user.id, "uid": email, "email": email, "displayName": display_name},
+            }
+        ),
+        201,
+    )
 
 
 @app.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email") or "").strip().lower()
+    password = str(data.get("password") or "")
 
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
@@ -332,7 +340,20 @@ def login():
         return jsonify({"error": "Invalid credentials"}), 401
 
     access_token = create_access_token(identity=email)
-    return jsonify({"access_token": access_token, "user": {"email": email, "displayName": user.display_name}}), 200
+    return (
+        jsonify(
+            {
+                "access_token": access_token,
+                "user": {
+                    "id": user.id,
+                    "uid": user.email,
+                    "email": user.email,
+                    "displayName": user.display_name,
+                },
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/me", methods=["GET"])
@@ -342,11 +363,23 @@ def me():
     if not identity:
         return jsonify({"error": "Unauthorized"}), 401
 
-    user = User.query.filter_by(email=str(identity)).first()
+    user = User.query.filter_by(email=str(identity).strip().lower()).first()
     if user is None:
         return jsonify({"error": "User not found"}), 404
 
-    return jsonify({"user": {"email": user.email, "displayName": user.display_name or ""}}), 200
+    return (
+        jsonify(
+            {
+                "user": {
+                    "id": user.id,
+                    "uid": user.email,
+                    "email": user.email,
+                    "displayName": user.display_name or "",
+                }
+            }
+        ),
+        200,
+    )
 
 
 # -------------------- Predict --------------------

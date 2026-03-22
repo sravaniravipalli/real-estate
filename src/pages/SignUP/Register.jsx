@@ -24,7 +24,7 @@ const Register = () => {
     setSignUpError("");
     try {
       await createUser(data.email, data.password, data.username);
-      navigate("/dashboard");
+      navigate("/dashboard?tab=add-property", { replace: true });
       reset();
     } catch (err) {
       setSignUpError(err.message);

@@ -2,7 +2,7 @@ import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { AuthContext } from "context/authProvider/AuthProvider";
 import { useContext, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -27,6 +27,13 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logOut } = useContext(AuthContext);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logOut();
+    setMobileMenuOpen(false);
+    navigate("/", { replace: true });
+  };
 
   const isActive = (path) => {
     return location.pathname === path ? "text-primary font-bold" : "";
@@ -84,7 +91,7 @@ export default function Navbar() {
                 </span>
               </div>
               <button
-                onClick={logOut}
+                onClick={handleLogout}
                 type="button"
                 className="text-sm uppercase leading-6 text-gray-900 hover:text-[#7C6EE4] transition"
               >
@@ -164,7 +171,7 @@ export default function Navbar() {
                 {user?.email ? (
                   <div className="py-6">
                     <button
-                      onClick={logOut}
+                      onClick={handleLogout}
                       type="button"
                       className="text-sm uppercase leading-6 text-gray-900"
                     >
