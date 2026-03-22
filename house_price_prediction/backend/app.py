@@ -460,7 +460,7 @@ def load_videos_from_public():
                 n = 1
 
             video_url = prop.get("propertyVideo") or f"https://res.cloudinary.com/dh0glzsnz/video/upload/property{prop_id}.mp4"
-            thumb = prop.get("propertyImage") or f"/media/houses/img{prop_id}.jpg"
+            thumb = prop.get("propertyImage") or f"https://res.cloudinary.com/dh0glzsnz/image/upload/houses/img{prop_id}.jpg"
 
             videos.append({
                 "id": str(prop_id),
@@ -776,6 +776,7 @@ def seed_blogs():
     return jsonify({"inserted": inserted})
 
 
+# ✅ FIXED: seed_videos now updates existing records with correct Cloudinary thumbnail URLs
 @app.route("/seed/videos", methods=["POST"])
 def seed_videos():
     unauthorized = _require_seed_token()
@@ -789,39 +790,42 @@ def seed_videos():
         seeded_from_public = True
 
     inserted = 0
+    updated = 0
     for item in items:
-        # ✅ FIXED: Don't rewrite Cloudinary URLs
         if seeded_from_public:
             vurl = item.get("videoUrl") or ""
             if isinstance(vurl, str) and vurl.startswith("/assets/videos/"):
-                key = vurl.lstrip("/")
-                item["videoUrl"] = f"/media/{key}"
+                item["videoUrl"] = f"/media/{vurl.lstrip('/')}"
 
             thumb = item.get("thumbnail") or ""
             if isinstance(thumb, str) and thumb.startswith("/houses/"):
-                key = thumb.lstrip("/")
-                item["thumbnail"] = f"/media/{key}"
+                item["thumbnail"] = f"/media/{thumb.lstrip('/')}"
 
         external_id = item.get("_id") or item.get("id")
         if external_id is None:
             continue
         external_id = str(external_id)
-        if Video.query.filter_by(external_id=external_id).first() is not None:
-            continue
 
         property_id = item.get("propertyId") or item.get("property_id") or external_id
         category_id = item.get("type") or item.get("categoryId")
-        db.session.add(
-            Video(
+
+        existing = Video.query.filter_by(external_id=external_id).first()
+        if existing is None:
+            db.session.add(Video(
                 external_id=external_id,
                 property_external_id=str(property_id),
                 category_id=str(category_id) if category_id else None,
                 payload=item,
-            )
-        )
-        inserted += 1
+            ))
+            inserted += 1
+        else:
+            existing.payload = item
+            existing.property_external_id = str(property_id)
+            existing.category_id = str(category_id) if category_id else None
+            updated += 1
+
     db.session.commit()
-    return jsonify({"inserted": inserted})
+    return jsonify({"inserted": inserted, "updated": updated})
 
 
 @app.route("/seed/media", methods=["POST"])
@@ -963,6 +967,7 @@ def seed_ml_from_gdrive():
         return jsonify({"status": "ok", "model_size": len(model_data), "scaler_size": len(scaler_data)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/ml/status", methods=["GET"])
 def ml_status():
