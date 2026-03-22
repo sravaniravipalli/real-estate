@@ -171,8 +171,10 @@ def _absolute_if_relative_media_url(value: str) -> str:
         return value
     if not (value.startswith("/media/") or value.startswith("/assets/") or value.startswith("/houses/")):
         return value
-    return request.url_root.rstrip("/") + value
-
+    # ✅ Force https for production
+    url_root = request.url_root.rstrip("/")
+    url_root = url_root.replace("http://", "https://")
+    return url_root + value
 
 def _rewrite_media_urls(payload: dict) -> dict:
     keys = [
