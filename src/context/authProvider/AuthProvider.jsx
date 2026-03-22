@@ -16,7 +16,6 @@ try {
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // Initialize user from localStorage
     try {
       const savedUser = localStorage.getItem('realEstateUser');
       return savedUser ? JSON.parse(savedUser) : null;
@@ -27,7 +26,6 @@ const AuthProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
 
-  // Mock user database for development (store in localStorage)
   const getMockUsers = () => {
     try {
       const saved = localStorage.getItem('mockUsersDB');
@@ -45,14 +43,11 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const mockUsers = getMockUsers();
-
   const createUser = (email, password, displayName = "") => {
     setLoading(true);
     return new Promise((resolve, reject) => {
       try {
         if (!auth) {
-          // Mock implementation
           const users = getMockUsers();
           if (users.has(email)) {
             setLoading(false);
@@ -66,19 +61,18 @@ const AuthProvider = ({ children }) => {
             users.set(email, { ...mockUser, password });
             saveMockUsers(users);
             setUser(mockUser);
-            // Save user to localStorage
             localStorage.setItem('realEstateUser', JSON.stringify(mockUser));
             setLoading(false);
             resolve({ user: mockUser });
           }
         } else {
-          // Real Firebase implementation
           require("firebase/auth")
             .createUserWithEmailAndPassword(auth, email, password)
-            .then(resolve)
-            .catch(reject);
+            .then((result) => { setLoading(false); resolve(result); })
+            .catch((err) => { setLoading(false); reject(err); });
         }
       } catch (error) {
+        setLoading(false);
         reject(error);
       }
     });
@@ -89,13 +83,11 @@ const AuthProvider = ({ children }) => {
     return new Promise((resolve, reject) => {
       try {
         if (!auth) {
-          // Mock implementation
           const users = getMockUsers();
           const user = users.get(email);
           if (user && user.password === password) {
-            const { password, ...userWithoutPassword } = user;
+            const { password: _pw, ...userWithoutPassword } = user;
             setUser(userWithoutPassword);
-            // Save user to localStorage
             localStorage.setItem('realEstateUser', JSON.stringify(userWithoutPassword));
             setLoading(false);
             resolve({ user: userWithoutPassword });
@@ -104,27 +96,24 @@ const AuthProvider = ({ children }) => {
             reject({ message: "Invalid email or password" });
           }
         } else {
-          // Real Firebase implementation
           require("firebase/auth")
             .signInWithEmailAndPassword(auth, email, password)
-            .then(resolve)
-            .catch(reject);
+            .then((result) => { setLoading(false); resolve(result); })
+            .catch((err) => { setLoading(false); reject(err); });
         }
       } catch (error) {
+        setLoading(false);
         reject(error);
       }
     });
   };
 
   const updateUser = (userInfo) => {
-    setLoading(true);
     return new Promise((resolve, reject) => {
       try {
         if (!auth) {
-          // Mock implementation
           setTimeout(() => resolve({}), 100);
         } else {
-          // Real Firebase implementation
           require("firebase/auth")
             .updateProfile(auth.currentUser, userInfo)
             .then(resolve)
@@ -141,48 +130,45 @@ const AuthProvider = ({ children }) => {
     return new Promise((resolve, reject) => {
       try {
         if (!auth) {
-          // Mock implementation for Google/Github login
           const mockUser = {
             uid: `mock_${Date.now()}`,
             email: `user_${Date.now()}@example.com`,
             displayName: "Test User",
           };
           setUser(mockUser);
-          // Save user to localStorage
           localStorage.setItem('realEstateUser', JSON.stringify(mockUser));
+          setLoading(false);
           setTimeout(() => resolve({ user: mockUser }), 500);
         } else {
-          // Real Firebase implementation
           require("firebase/auth")
             .signInWithPopup(auth, provider)
-            .then(resolve)
-            .catch(reject);
+            .then((result) => { setLoading(false); resolve(result); })
+            .catch((err) => { setLoading(false); reject(err); });
         }
       } catch (error) {
+        setLoading(false);
         reject(error);
       }
     });
   };
 
   const logOut = () => {
-    setLoading(true);
     toast.success("Logout Successful");
     return new Promise((resolve, reject) => {
       try {
         if (!auth) {
-          // Mock implementation
           setUser(null);
-          // Clear user from localStorage
           localStorage.removeItem('realEstateUser');
+          setLoading(false);
           setTimeout(() => resolve({}), 100);
         } else {
-          // Real Firebase implementation
           require("firebase/auth")
             .signOut(auth)
-            .then(resolve)
-            .catch(reject);
+            .then((result) => { setLoading(false); resolve(result); })
+            .catch((err) => { setLoading(false); reject(err); });
         }
       } catch (error) {
+        setLoading(false);
         reject(error);
       }
     });
@@ -191,13 +177,11 @@ const AuthProvider = ({ children }) => {
   // Auth state observer
   useEffect(() => {
     if (auth) {
-      // Real Firebase observer
       try {
         const unsubscribe = require("firebase/auth").onAuthStateChanged(
           auth,
           (currentUser) => {
             setUser(currentUser);
-            // Save user to localStorage for persistence
             if (currentUser) {
               localStorage.setItem('realEstateUser', JSON.stringify(currentUser));
             } else {
@@ -211,7 +195,6 @@ const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     } else {
-      // Mock implementation - check localStorage for existing session
       const savedUser = localStorage.getItem('realEstateUser');
       if (savedUser) {
         try {
@@ -221,7 +204,8 @@ const AuthProvider = ({ children }) => {
           localStorage.removeItem('realEstateUser');
         }
       }
-      setTimeout(() => setLoading(false), 500);
+      // ✅ FIXED: Always set loading to false after checking localStorage
+      setLoading(false);
     }
   }, []);
 
