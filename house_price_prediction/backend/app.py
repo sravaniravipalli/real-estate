@@ -52,10 +52,20 @@ def handle_global_options():
 
 @app.after_request
 def add_cors_headers(response):
-    response.headers['Access-Control-Allow-Origin'] = '*'
+    origin = request.headers.get("Origin")
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = "Origin"
+    else:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+
     requested_headers = request.headers.get("Access-Control-Request-Headers")
-    response.headers['Access-Control-Allow-Headers'] = requested_headers or 'Content-Type,Authorization,Accept,Origin,X-Requested-With'
+    response.headers["Access-Control-Allow-Headers"] = requested_headers or (
+        "Content-Type, Authorization, Accept, Origin, X-Requested-With, "
+        "X-CSRFToken, Cache-Control, Pragma"
+    )
     response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+    response.headers["Access-Control-Max-Age"] = "86400"
     return response
 
 
