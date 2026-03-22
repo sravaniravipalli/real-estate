@@ -5,6 +5,7 @@ import json
 import os
 import pickle
 import warnings
+import requests
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -33,7 +34,6 @@ def _detect_repo_root() -> Path:
     for parent in BASE_DIR.parents:
         if (parent / "public").exists():
             return parent
-    # Fallback: return BASE_DIR itself if no parent found
     return BASE_DIR
 
 
@@ -173,7 +173,6 @@ def _absolute_if_relative_media_url(value: str) -> str:
         return value
     if not (value.startswith("/media/") or value.startswith("/assets/") or value.startswith("/houses/")):
         return value
-    # ✅ Force https for production
     url_root = request.url_root.rstrip("/")
     url_root = url_root.replace("http://", "https://")
     return url_root + value
@@ -444,43 +443,60 @@ def _pick_category_for_id(n: int) -> str:
     return VIDEO_CATEGORIES[(n - 1) % len(VIDEO_CATEGORIES)]["id"]
 
 
+# ✅ FIXED: Generate videos from mock_properties.json using Cloudinary URLs
 def load_videos_from_public():
     videos = []
-    if not VIDEO_DIR.exists():
-        return videos
 
-    for p in sorted(VIDEO_DIR.glob("property*.mp4")):
-        stem = p.stem
-        try:
-            prop_id = int(stem.replace("property", ""))
-        except Exception:
-            continue
+    # Try loading from mock_properties.json first (Cloudinary URLs)
+    props = _safe_json_load(MOCK_PROPERTIES_FILE, [])
+    if isinstance(props, list) and props:
+        for prop in props:
+            prop_id = prop.get("_id") or prop.get("id")
+            if prop_id is None:
+                continue
+            try:
+                n = int(prop_id)
+            except Exception:
+                n = 1
 
-        thumb_rel = f"/houses/img{prop_id}.jpg"
-        if not (HOUSES_DIR / f"img{prop_id}.jpg").exists():
-            thumb_rel = "/no-property.png"
+            video_url = prop.get("propertyVideo") or f"https://res.cloudinary.com/dh0glzsnz/video/upload/property{prop_id}.mp4"
+            thumb = prop.get("propertyImage") or f"/media/houses/img{prop_id}.jpg"
 
-        upload_date = None
-        try:
-            import datetime as _dt
-            upload_date = _dt.datetime.fromtimestamp(p.stat().st_mtime).date().isoformat()
-        except Exception:
-            upload_date = None
-
-        videos.append(
-            {
+            videos.append({
                 "id": str(prop_id),
                 "propertyId": str(prop_id),
                 "title": f"Property {prop_id} Video Tour",
-                "videoUrl": f"/assets/videos/property{prop_id}.mp4",
-                "thumbnail": thumb_rel,
+                "videoUrl": video_url,
+                "thumbnail": thumb,
+                "duration": "",
+                "views": 500 + (n * 73),
+                "uploadDate": None,
+                "description": f"Video tour for property {prop_id}.",
+                "type": _pick_category_for_id(n),
+            })
+        return videos
+
+    # Fallback: scan local video files
+    if VIDEO_DIR.exists():
+        for p in sorted(VIDEO_DIR.glob("property*.mp4")):
+            stem = p.stem
+            try:
+                prop_id = int(stem.replace("property", ""))
+            except Exception:
+                continue
+
+            videos.append({
+                "id": str(prop_id),
+                "propertyId": str(prop_id),
+                "title": f"Property {prop_id} Video Tour",
+                "videoUrl": f"https://res.cloudinary.com/dh0glzsnz/video/upload/property{prop_id}.mp4",
+                "thumbnail": f"/media/houses/img{prop_id}.jpg",
                 "duration": "",
                 "views": 500 + (prop_id * 73),
-                "uploadDate": upload_date,
+                "uploadDate": None,
                 "description": f"Video tour for property {prop_id}.",
                 "type": _pick_category_for_id(prop_id),
-            }
-        )
+            })
 
     return videos
 
@@ -510,6 +526,8 @@ def _blogs_file_candidates():
         REPO_ROOT / "public" / "blogsData.json",
         REPO_ROOT / "dist" / "blogsData.json",
         BASE_DIR / "blogsData.json",
+        REPO_ROOT / "src" / "blogsData.json",
+        REPO_ROOT / "blogsData.json",
     ]
 
 
@@ -519,6 +537,67 @@ def load_blogs():
         if isinstance(data, list):
             return data
     return []
+
+
+# ✅ FIXED: Generate mock blogs if no blogsData.json found
+def load_mock_blogs():
+    return [
+        {
+            "_id": "1",
+            "title": "Top 10 Real Estate Investment Tips for 2024",
+            "description": "Discover the best strategies for real estate investment in today's market.",
+            "content": "Real estate investment requires careful planning and market analysis...",
+            "author": "Priya Sharma",
+            "date": "2024-01-15",
+            "category": "Investment",
+            "image": "/media/houses/img1.jpg",
+            "readTime": "5 min read"
+        },
+        {
+            "_id": "2",
+            "title": "How to Choose the Perfect Home in Hyderabad",
+            "description": "A complete guide to buying your dream home in Hyderabad.",
+            "content": "Hyderabad's real estate market has been growing rapidly...",
+            "author": "Ravi Kumar",
+            "date": "2024-02-10",
+            "category": "Buying Guide",
+            "image": "/media/houses/img2.jpg",
+            "readTime": "7 min read"
+        },
+        {
+            "_id": "3",
+            "title": "Understanding Property Valuation in India",
+            "description": "Learn how property valuation works and what factors affect it.",
+            "content": "Property valuation is a critical step in any real estate transaction...",
+            "author": "Anita Reddy",
+            "date": "2024-03-05",
+            "category": "Education",
+            "image": "/media/houses/img3.jpg",
+            "readTime": "6 min read"
+        },
+        {
+            "_id": "4",
+            "title": "Rental Property Management Best Practices",
+            "description": "Tips for managing rental properties effectively.",
+            "content": "Managing rental properties can be challenging but rewarding...",
+            "author": "Suresh Babu",
+            "date": "2024-03-20",
+            "category": "Management",
+            "image": "/media/houses/img4.jpg",
+            "readTime": "8 min read"
+        },
+        {
+            "_id": "5",
+            "title": "The Future of Smart Homes in India",
+            "description": "How technology is transforming the real estate sector.",
+            "content": "Smart home technology is revolutionizing how we live...",
+            "author": "Deepa Nair",
+            "date": "2024-04-01",
+            "category": "Technology",
+            "image": "/media/houses/img5.jpg",
+            "readTime": "4 min read"
+        },
+    ]
 
 
 @app.route("/blogs", methods=["GET"])
@@ -679,6 +758,10 @@ def seed_blogs():
     if not isinstance(items, list):
         items = load_blogs()
 
+    # ✅ FIXED: Use mock blogs if no blogsData.json found
+    if not items:
+        items = load_mock_blogs()
+
     inserted = 0
     for item in items:
         external_id = item.get("_id") or item.get("id")
@@ -707,6 +790,7 @@ def seed_videos():
 
     inserted = 0
     for item in items:
+        # ✅ FIXED: Don't rewrite Cloudinary URLs
         if seeded_from_public:
             vurl = item.get("videoUrl") or ""
             if isinstance(vurl, str) and vurl.startswith("/assets/videos/"):
@@ -834,6 +918,48 @@ def seed_ml_from_files():
             existing.data = raw
     db.session.commit()
     return jsonify({"seeded": ["house_price_model.pkl", "scaler.pkl"]})
+
+
+# ✅ NEW: Download ML model from Google Drive
+@app.route("/seed/ml/from-gdrive", methods=["POST"])
+def seed_ml_from_gdrive():
+    unauthorized = _require_seed_token()
+    if unauthorized is not None:
+        return unauthorized
+    try:
+        model_url = "https://drive.google.com/uc?export=download&id=11UxplULQwU_hU2F31K97oqIq_yCzdtrE"
+
+        # Download model with confirmation token handling for large files
+        session = requests.Session()
+        response = session.get(model_url, stream=True)
+
+        # Handle Google Drive large file warning confirmation
+        token = None
+        for key, value in response.cookies.items():
+            if key.startswith("download_warning"):
+                token = value
+                break
+        if token:
+            response = session.get(model_url + f"&confirm={token}", stream=True)
+
+        model_data = b""
+        for chunk in response.iter_content(chunk_size=32768):
+            if chunk:
+                model_data += chunk
+
+        if len(model_data) < 1000:
+            return jsonify({"error": "Model download failed or too small", "size": len(model_data)}), 500
+
+        existing_model = MLArtifact.query.filter_by(key="house_price_model.pkl").first()
+        if existing_model is None:
+            db.session.add(MLArtifact(key="house_price_model.pkl", data=model_data))
+        else:
+            existing_model.data = model_data
+
+        db.session.commit()
+        return jsonify({"status": "ok", "message": "Model downloaded from Google Drive", "size": len(model_data)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/ml/status", methods=["GET"])
