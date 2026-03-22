@@ -12,7 +12,6 @@ from pathlib import Path
 import numpy as np
 import sklearn
 from flask import Flask, Response, jsonify, request
-from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -22,7 +21,6 @@ from sqlalchemy import text
 app = Flask(__name__)
 
 # ✅ FIXED: Allow all origins (fixes mobile CORS issues)
-CORS(app)
 
 # JWT Configuration
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'your-secret-key')  # Change in production
