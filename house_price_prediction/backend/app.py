@@ -115,6 +115,13 @@ else:
 db = SQLAlchemy(app)
 
 with app.app_context():
+    try:
+        # Lightweight migration: widen password_hash column if needed (Postgres).
+        if not app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite:"):
+            db.session.execute(text("ALTER TABLE users ALTER COLUMN password_hash TYPE VARCHAR(255)"))
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
     db.create_all()
 
 
@@ -123,7 +130,7 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
     display_name = db.Column(db.String(120), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
