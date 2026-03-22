@@ -17,13 +17,15 @@ from sklearn.exceptions import InconsistentVersionWarning
 
 app = Flask(__name__)
 
-# ✅ FIXED: Updated CORS for production
-CORS(app, resources={r"/*": {"origins": [
-    "https://real-estate-q4sn.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://localhost:5000"
-]}})
+# ✅ FIXED: Allow all origins (fixes mobile CORS issues)
+CORS(app)
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+    return response
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -276,8 +278,11 @@ _maybe_migrate_json_to_db()
 
 # -------------------- Predict --------------------
 
-@app.route("/predict", methods=["GET", "POST"])
+@app.route("/predict", methods=["GET", "POST", "OPTIONS"])
 def predict():
+    if request.method == "OPTIONS":
+        return Response(status=200)
+
     if request.method == "GET":
         return jsonify(
             {
@@ -323,8 +328,10 @@ def predict():
 
 # -------------------- Properties --------------------
 
-@app.route("/properties", methods=["GET"])
+@app.route("/properties", methods=["GET", "OPTIONS"])
 def get_properties():
+    if request.method == "OPTIONS":
+        return Response(status=200)
     items = Property.query.order_by(Property.id.asc()).all()
     return jsonify({"properties": [_rewrite_media_urls(dict(p.payload)) for p in items]})
 
