@@ -539,7 +539,7 @@ def load_blogs():
     return []
 
 
-# ✅ FIXED: Generate mock blogs if no blogsData.json found
+# ✅ FIXED: Cloudinary URLs for blog images
 def load_mock_blogs():
     return [
         {
@@ -550,7 +550,7 @@ def load_mock_blogs():
             "author": "Priya Sharma",
             "date": "2024-01-15",
             "category": "Investment",
-            "image": "/media/houses/img1.jpg",
+            "image": "https://res.cloudinary.com/dh0glzsnz/image/upload/houses/img1.jpg",
             "readTime": "5 min read"
         },
         {
@@ -561,7 +561,7 @@ def load_mock_blogs():
             "author": "Ravi Kumar",
             "date": "2024-02-10",
             "category": "Buying Guide",
-            "image": "/media/houses/img2.jpg",
+            "image": "https://res.cloudinary.com/dh0glzsnz/image/upload/houses/img2.jpg",
             "readTime": "7 min read"
         },
         {
@@ -572,7 +572,7 @@ def load_mock_blogs():
             "author": "Anita Reddy",
             "date": "2024-03-05",
             "category": "Education",
-            "image": "/media/houses/img3.jpg",
+            "image": "https://res.cloudinary.com/dh0glzsnz/image/upload/houses/img3.jpg",
             "readTime": "6 min read"
         },
         {
@@ -583,7 +583,7 @@ def load_mock_blogs():
             "author": "Suresh Babu",
             "date": "2024-03-20",
             "category": "Management",
-            "image": "/media/houses/img4.jpg",
+            "image": "https://res.cloudinary.com/dh0glzsnz/image/upload/houses/img4.jpg",
             "readTime": "8 min read"
         },
         {
@@ -594,7 +594,7 @@ def load_mock_blogs():
             "author": "Deepa Nair",
             "date": "2024-04-01",
             "category": "Technology",
-            "image": "/media/houses/img5.jpg",
+            "image": "https://res.cloudinary.com/dh0glzsnz/image/upload/houses/img5.jpg",
             "readTime": "4 min read"
         },
     ]
@@ -748,6 +748,7 @@ def seed_mock_properties():
     return jsonify({"inserted": inserted, "updated": updated, "total": inserted + updated})
 
 
+# ✅ FIXED: seed_blogs now updates existing records with Cloudinary image URLs
 @app.route("/seed/blogs", methods=["POST"])
 def seed_blogs():
     unauthorized = _require_seed_token()
@@ -758,22 +759,25 @@ def seed_blogs():
     if not isinstance(items, list):
         items = load_blogs()
 
-    # ✅ FIXED: Use mock blogs if no blogsData.json found
     if not items:
         items = load_mock_blogs()
 
     inserted = 0
+    updated = 0
     for item in items:
         external_id = item.get("_id") or item.get("id")
         if external_id is None:
             continue
         external_id = str(external_id)
-        if BlogPost.query.filter_by(external_id=external_id).first() is not None:
-            continue
-        db.session.add(BlogPost(external_id=external_id, payload=item))
-        inserted += 1
+        existing = BlogPost.query.filter_by(external_id=external_id).first()
+        if existing is None:
+            db.session.add(BlogPost(external_id=external_id, payload=item))
+            inserted += 1
+        else:
+            existing.payload = item
+            updated += 1
     db.session.commit()
-    return jsonify({"inserted": inserted})
+    return jsonify({"inserted": inserted, "updated": updated})
 
 
 # ✅ FIXED: seed_videos now updates existing records with correct Cloudinary thumbnail URLs
