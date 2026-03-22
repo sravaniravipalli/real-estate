@@ -34,7 +34,18 @@ export async function apiFetch(pathOrUrl, options = {}) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  return fetch(url, { ...options, headers });
+  try {
+    return await fetch(url, { ...options, headers });
+  } catch (err) {
+    // In browsers, CORS/network/TLS failures typically surface as "TypeError: Failed to fetch".
+    const message =
+      err && err.name === "AbortError"
+        ? `Request aborted: ${url}`
+        : `Network/CORS error calling: ${url} (API_BASE_URL=${API_BASE_URL || "(empty)"})`;
+    const wrapped = new Error(message);
+    wrapped.cause = err;
+    throw wrapped;
+  }
 }
 
 export async function apiJson(pathOrUrl, options = {}) {
