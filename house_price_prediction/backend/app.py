@@ -28,6 +28,20 @@ CORS(app)
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'your-secret-key')  # Change in production
 jwt = JWTManager(app)
 
+
+def _include_error_detail() -> bool:
+    return str(os.environ.get("INCLUDE_ERROR_DETAIL") or "").strip() in {"1", "true", "yes"}
+
+
+@app.errorhandler(Exception)
+def handle_unexpected_error(e):
+    # Keep API responses actionable in production debugging (opt-in).
+    app.logger.exception("Unhandled exception")
+    payload = {"error": "Internal Server Error"}
+    if _include_error_detail():
+        payload["detail"] = str(e)
+    return jsonify(payload), 500
+
 @app.after_request
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
@@ -111,7 +125,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     display_name = db.Column(db.String(120), nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
 class Property(db.Model):
@@ -120,12 +134,12 @@ class Property(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     external_id = db.Column(db.String(64), unique=True, nullable=False, index=True)
     payload = db.Column(db.JSON, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime,
         nullable=False,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
     )
 
 
@@ -136,7 +150,7 @@ class WishlistItem(db.Model):
     user_id = db.Column(db.String(128), nullable=False, index=True)
     property_external_id = db.Column(db.String(64), nullable=False, index=True)
     payload = db.Column(db.JSON, nullable=False)
-    added_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    added_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     __table_args__ = (db.UniqueConstraint("user_id", "property_external_id", name="uq_user_property"),)
 
@@ -147,7 +161,7 @@ class BlogPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     external_id = db.Column(db.String(64), unique=True, nullable=False, index=True)
     payload = db.Column(db.JSON, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
 class VideoCategory(db.Model):
@@ -164,7 +178,7 @@ class MediaBlob(db.Model):
     key = db.Column(db.String(255), primary_key=True)
     mime_type = db.Column(db.String(128), nullable=False)
     data = db.Column(db.LargeBinary, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
 class Video(db.Model):
@@ -175,7 +189,7 @@ class Video(db.Model):
     property_external_id = db.Column(db.String(64), nullable=False, index=True)
     category_id = db.Column(db.String(64), nullable=True, index=True)
     payload = db.Column(db.JSON, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
 class MLArtifact(db.Model):
@@ -183,7 +197,7 @@ class MLArtifact(db.Model):
 
     key = db.Column(db.String(64), primary_key=True)
     data = db.Column(db.LargeBinary, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
 def _safe_json_load(path: Path | None, default):
@@ -337,21 +351,30 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "Email already registered"}), 400
 
-    password_hash = generate_password_hash(password)
-    new_user = User(email=email, password_hash=password_hash, display_name=display_name)
-    db.session.add(new_user)
-    db.session.commit()
+    try:
+        password_hash = generate_password_hash(password)
+        new_user = User(email=email, password_hash=password_hash, display_name=display_name)
+        db.session.add(new_user)
+        db.session.commit()
 
-    access_token = create_access_token(identity=email)
-    return (
-        jsonify(
-            {
-                "access_token": access_token,
-                "user": {"id": new_user.id, "uid": email, "email": email, "displayName": display_name},
-            }
-        ),
-        201,
-    )
+        access_token = create_access_token(identity=email)
+
+        return (
+            jsonify(
+                {
+                    "access_token": access_token,
+                    "user": {"id": new_user.id, "uid": email, "email": email, "displayName": display_name},
+                }
+            ),
+            201,
+        )
+    except Exception as e:
+        db.session.rollback()
+        app.logger.exception("Registration failed")
+        payload = {"error": "Registration failed"}
+        if _include_error_detail():
+            payload["detail"] = str(e)
+        return jsonify(payload), 500
 
 
 @app.route("/login", methods=["POST"])
@@ -367,21 +390,28 @@ def login():
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({"error": "Invalid credentials"}), 401
 
-    access_token = create_access_token(identity=email)
-    return (
-        jsonify(
-            {
-                "access_token": access_token,
-                "user": {
-                    "id": user.id,
-                    "uid": user.email,
-                    "email": user.email,
-                    "displayName": user.display_name,
-                },
-            }
-        ),
-        200,
-    )
+    try:
+        access_token = create_access_token(identity=email)
+        return (
+            jsonify(
+                {
+                    "access_token": access_token,
+                    "user": {
+                        "id": user.id,
+                        "uid": user.email,
+                        "email": user.email,
+                        "displayName": user.display_name,
+                    },
+                }
+            ),
+            200,
+        )
+    except Exception as e:
+        app.logger.exception("Login failed")
+        payload = {"error": "Login failed"}
+        if _include_error_detail():
+            payload["detail"] = str(e)
+        return jsonify(payload), 500
 
 
 @app.route("/me", methods=["GET"])
