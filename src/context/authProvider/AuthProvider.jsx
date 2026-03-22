@@ -3,14 +3,12 @@ import { toast } from "react-hot-toast";
 
 export const AuthContext = createContext();
 
-// Mock Firebase Auth for development/testing
 let auth = null;
 
 try {
   const app = require("context/firebase/firebase.config").default;
   auth = require("firebase/auth").getAuth(app);
 } catch (error) {
-  // Firebase not initialized, using mock auth for development
   auth = null;
 }
 
@@ -20,7 +18,6 @@ const AuthProvider = ({ children }) => {
       const savedUser = localStorage.getItem('realEstateUser');
       return savedUser ? JSON.parse(savedUser) : null;
     } catch (error) {
-      console.error('Error loading user from localStorage:', error);
       return null;
     }
   });
@@ -38,9 +35,7 @@ const AuthProvider = ({ children }) => {
   const saveMockUsers = (users) => {
     try {
       localStorage.setItem('mockUsersDB', JSON.stringify([...users]));
-    } catch (error) {
-      console.error('Error saving mock users:', error);
-    }
+    } catch (error) {}
   };
 
   const createUser = (email, password, displayName = "") => {
@@ -53,11 +48,7 @@ const AuthProvider = ({ children }) => {
             setLoading(false);
             reject({ message: "Email already in use" });
           } else {
-            const mockUser = {
-              uid: `mock_${Date.now()}`,
-              email,
-              displayName: displayName || "",
-            };
+            const mockUser = { uid: mock_, email, displayName: displayName || "" };
             users.set(email, { ...mockUser, password });
             saveMockUsers(users);
             setUser(mockUser);
@@ -66,15 +57,11 @@ const AuthProvider = ({ children }) => {
             resolve({ user: mockUser });
           }
         } else {
-          require("firebase/auth")
-            .createUserWithEmailAndPassword(auth, email, password)
-            .then((result) => { setLoading(false); resolve(result); })
-            .catch((err) => { setLoading(false); reject(err); });
+          require("firebase/auth").createUserWithEmailAndPassword(auth, email, password)
+            .then((r) => { setLoading(false); resolve(r); })
+            .catch((e) => { setLoading(false); reject(e); });
         }
-      } catch (error) {
-        setLoading(false);
-        reject(error);
-      }
+      } catch (error) { setLoading(false); reject(error); }
     });
   };
 
@@ -84,9 +71,9 @@ const AuthProvider = ({ children }) => {
       try {
         if (!auth) {
           const users = getMockUsers();
-          const user = users.get(email);
-          if (user && user.password === password) {
-            const { password: _pw, ...userWithoutPassword } = user;
+          const u = users.get(email);
+          if (u && u.password === password) {
+            const { password: _pw, ...userWithoutPassword } = u;
             setUser(userWithoutPassword);
             localStorage.setItem('realEstateUser', JSON.stringify(userWithoutPassword));
             setLoading(false);
@@ -96,32 +83,20 @@ const AuthProvider = ({ children }) => {
             reject({ message: "Invalid email or password" });
           }
         } else {
-          require("firebase/auth")
-            .signInWithEmailAndPassword(auth, email, password)
-            .then((result) => { setLoading(false); resolve(result); })
-            .catch((err) => { setLoading(false); reject(err); });
+          require("firebase/auth").signInWithEmailAndPassword(auth, email, password)
+            .then((r) => { setLoading(false); resolve(r); })
+            .catch((e) => { setLoading(false); reject(e); });
         }
-      } catch (error) {
-        setLoading(false);
-        reject(error);
-      }
+      } catch (error) { setLoading(false); reject(error); }
     });
   };
 
   const updateUser = (userInfo) => {
     return new Promise((resolve, reject) => {
       try {
-        if (!auth) {
-          setTimeout(() => resolve({}), 100);
-        } else {
-          require("firebase/auth")
-            .updateProfile(auth.currentUser, userInfo)
-            .then(resolve)
-            .catch(reject);
-        }
-      } catch (error) {
-        reject(error);
-      }
+        if (!auth) { setTimeout(() => resolve({}), 100); }
+        else { require("firebase/auth").updateProfile(auth.currentUser, userInfo).then(resolve).catch(reject); }
+      } catch (error) { reject(error); }
     });
   };
 
@@ -130,25 +105,17 @@ const AuthProvider = ({ children }) => {
     return new Promise((resolve, reject) => {
       try {
         if (!auth) {
-          const mockUser = {
-            uid: `mock_${Date.now()}`,
-            email: `user_${Date.now()}@example.com`,
-            displayName: "Test User",
-          };
+          const mockUser = { uid: mock_, email: user_@example.com, displayName: "Test User" };
           setUser(mockUser);
           localStorage.setItem('realEstateUser', JSON.stringify(mockUser));
           setLoading(false);
           setTimeout(() => resolve({ user: mockUser }), 500);
         } else {
-          require("firebase/auth")
-            .signInWithPopup(auth, provider)
-            .then((result) => { setLoading(false); resolve(result); })
-            .catch((err) => { setLoading(false); reject(err); });
+          require("firebase/auth").signInWithPopup(auth, provider)
+            .then((r) => { setLoading(false); resolve(r); })
+            .catch((e) => { setLoading(false); reject(e); });
         }
-      } catch (error) {
-        setLoading(false);
-        reject(error);
-      }
+      } catch (error) { setLoading(false); reject(error); }
     });
   };
 
@@ -162,67 +129,38 @@ const AuthProvider = ({ children }) => {
           setLoading(false);
           setTimeout(() => resolve({}), 100);
         } else {
-          require("firebase/auth")
-            .signOut(auth)
-            .then((result) => { setLoading(false); resolve(result); })
-            .catch((err) => { setLoading(false); reject(err); });
+          require("firebase/auth").signOut(auth)
+            .then((r) => { setLoading(false); resolve(r); })
+            .catch((e) => { setLoading(false); reject(e); });
         }
-      } catch (error) {
-        setLoading(false);
-        reject(error);
-      }
+      } catch (error) { setLoading(false); reject(error); }
     });
   };
 
-  // Auth state observer
   useEffect(() => {
     if (auth) {
       try {
-        const unsubscribe = require("firebase/auth").onAuthStateChanged(
-          auth,
-          (currentUser) => {
-            setUser(currentUser);
-            if (currentUser) {
-              localStorage.setItem('realEstateUser', JSON.stringify(currentUser));
-            } else {
-              localStorage.removeItem('realEstateUser');
-            }
-            setLoading(false);
-          }
-        );
+        const unsubscribe = require("firebase/auth").onAuthStateChanged(auth, (currentUser) => {
+          setUser(currentUser);
+          if (currentUser) { localStorage.setItem('realEstateUser', JSON.stringify(currentUser)); }
+          else { localStorage.removeItem('realEstateUser'); }
+          setLoading(false);
+        });
         return () => unsubscribe();
-      } catch (error) {
-        setLoading(false);
-      }
+      } catch (error) { setLoading(false); }
     } else {
       const savedUser = localStorage.getItem('realEstateUser');
       if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch (error) {
-          console.error('Error parsing saved user:', error);
-          localStorage.removeItem('realEstateUser');
-        }
+        try { setUser(JSON.parse(savedUser)); }
+        catch (error) { localStorage.removeItem('realEstateUser'); }
       }
-      // ✅ FIXED: Always set loading to false after checking localStorage
       setLoading(false);
     }
   }, []);
 
-  const authInfo = {
-    createUser,
-    signIn,
-    user,
-    updateUser,
-    logOut,
-    providerLogin,
-    loading,
-    setLoading,
-  };
+  const authInfo = { createUser, signIn, user, updateUser, logOut, providerLogin, loading, setLoading };
 
-  return (
-    <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;
 };
 
 export default AuthProvider;
