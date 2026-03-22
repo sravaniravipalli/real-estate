@@ -378,8 +378,10 @@ _maybe_migrate_json_to_db()
 
 # -------------------- Auth --------------------
 
-@app.route("/register", methods=["POST"])
+@app.route("/register", methods=["POST", "OPTIONS"])
 def register():
+    if request.method == "OPTIONS":
+        return Response(status=200)
     data = request.get_json(silent=True) or {}
     email = str(data.get("email") or "").strip().lower()
     password = str(data.get("password") or "")
@@ -417,8 +419,10 @@ def register():
         return jsonify(payload), 500
 
 
-@app.route("/login", methods=["POST"])
+@app.route("/login", methods=["POST", "OPTIONS"])
 def login():
+    if request.method == "OPTIONS":
+        return Response(status=200)
     data = request.get_json(silent=True) or {}
     email = str(data.get("email") or "").strip().lower()
     password = str(data.get("password") or "")
@@ -454,9 +458,11 @@ def login():
         return jsonify(payload), 500
 
 
-@app.route("/me", methods=["GET"])
+@app.route("/me", methods=["GET", "OPTIONS"])
 @jwt_required()
 def me():
+    if request.method == "OPTIONS":
+        return Response(status=200)
     identity = get_jwt_identity()
     if not identity:
         return jsonify({"error": "Unauthorized"}), 401
