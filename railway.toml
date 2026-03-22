@@ -1,0 +1,9 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "pip install -r house_price_prediction/backend/requirements.txt"
+
+[deploy]
+startCommand = "gunicorn app:app --chdir house_price_prediction/backend --bind 0.0.0.0:$PORT"
+healthcheckPath = "/properties"
+healthcheckTimeout = 100
+

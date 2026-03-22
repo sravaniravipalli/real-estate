@@ -17,6 +17,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 from sklearn.exceptions import InconsistentVersionWarning
+from sqlalchemy import text
 
 app = Flask(__name__)
 
@@ -33,6 +34,20 @@ def add_cors_headers(response):
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
     response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
     return response
+
+
+@app.route("/healthz", methods=["GET"])
+def healthz():
+    db_name = "unknown"
+    db_ok = False
+    try:
+        db_name = db.engine.url.get_backend_name() or "unknown"
+        db.session.execute(text("SELECT 1"))
+        db_ok = True
+    except Exception:
+        db_ok = False
+
+    return jsonify({"ok": True, "db": db_name, "db_ok": bool(db_ok)}), 200
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -61,6 +76,13 @@ def _get_database_url() -> str:
     url = (os.environ.get("DATABASE_URL") or "").strip()
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://"):]
+
+    # In production (Railway/Render/etc.), require an external DB for persistence.
+    # Falling back to SQLite inside ephemeral containers causes users/properties to disappear on redeploy/restart.
+    is_prod_like = bool(os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("RENDER") or os.environ.get("FLY_APP_NAME"))
+    if not url and is_prod_like:
+        raise RuntimeError("DATABASE_URL is required in production for persistent storage (Postgres).")
+
     if not url:
         url = f"sqlite:///{(BASE_DIR / 'app.db').as_posix()}"
     return url
@@ -70,6 +92,12 @@ app.config["SQLALCHEMY_DATABASE_URI"] = _get_database_url()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite:"):
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"connect_args": {"timeout": 30}}
+else:
+    # Better resilience for managed Postgres connections.
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
 db = SQLAlchemy(app)
 
 with app.app_context():

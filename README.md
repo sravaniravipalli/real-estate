@@ -120,6 +120,33 @@ If deploying the frontend to Vercel, keep `vercel.json` so browser refresh/deep-
 
 Important for production: if you deploy the backend without `DATABASE_URL`, it will use SQLite (`app.db`) inside the container. On most hosts (Railway/Render/etc.) that file storage is not guaranteed to persist across redeploys/restarts, so users may “disappear”. Use a managed Postgres `DATABASE_URL` for persistent users/properties.
 
+The backend is configured to **refuse to start in production** if `DATABASE_URL` is missing, to prevent accidental SQLite usage.
+
+### Railway (Backend)
+Set Railway to run the backend from this repo root (works with the included `railway.toml`):
+- Build installs: `house_price_prediction/backend/requirements.txt`
+- Start command: Gunicorn bound to `$PORT` and `--chdir house_price_prediction/backend`
+
+Railway variables (service):
+- `JWT_SECRET_KEY` (required)
+- `DATABASE_URL` (recommended: attach Railway Postgres so users/properties persist)
+
+Frontend (Vercel/Netlify) must set:
+- `VITE_REACT_API_URL` = your Railway backend public URL (no trailing slash)
+
+### Quick backend auth check
+From PowerShell:
+
+```powershell
+./scripts/verify_backend_auth.ps1 -BaseUrl "https://your-backend.up.railway.app"
+```
+
+Or run a full deployment sanity check (DB + auth):
+
+```powershell
+./scripts/verify_deployment.ps1 -BaseUrl "https://your-backend.up.railway.app"
+```
+
 ## Troubleshooting
 In the RealEstateGenius project, our team is dedicated to proactive troubleshooting. We address issues promptly by thoroughly investigating and diagnosing potential problems. We actively monitor error logs, user feedback, and conduct thorough testing to identify and resolve any issues that may arise. Through effective communication and collaboration, we maintain the stability and functionality of the site.
 
