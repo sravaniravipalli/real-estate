@@ -158,7 +158,7 @@ def _normalize_property_payload(payload: dict) -> dict:
     for k in ["propertyImage", "videoThumbnail", "image", "thumbnail"]:
         v = payload.get(k)
         if isinstance(v, str) and v.startswith("/houses/"):
-            payload[k] = f"/media/{v.lstrip('/')}"
+            payload[k] = f"https://res.cloudinary.com/dh0glzsnz/image/upload/houses/{v.lstrip('/houses/')}"
 
     for k in ["propertyVideo", "videoUrl"]:
         v = payload.get(k)
@@ -490,7 +490,7 @@ def load_videos_from_public():
                 "propertyId": str(prop_id),
                 "title": f"Property {prop_id} Video Tour",
                 "videoUrl": f"https://res.cloudinary.com/dh0glzsnz/video/upload/property{prop_id}.mp4",
-                "thumbnail": f"/media/houses/img{prop_id}.jpg",
+                "thumbnail": f"https://res.cloudinary.com/dh0glzsnz/image/upload/houses/img{prop_id}.jpg",
                 "duration": "",
                 "views": 500 + (prop_id * 73),
                 "uploadDate": None,
