@@ -927,29 +927,42 @@ def seed_ml_from_gdrive():
     if unauthorized is not None:
         return unauthorized
     try:
-        url = "https://huggingface.co/Sravanisravs2125/real-estate-model/resolve/main/house_price_model.pkl"
-        response = requests.get(url, stream=True, timeout=300)
-        response.raise_for_status()
-
+        # Download model
+        model_url = "https://huggingface.co/Sravanisravs2125/real-estate-model/resolve/main/house_price_model.pkl"
+        model_response = requests.get(model_url, stream=True, timeout=300)
+        model_response.raise_for_status()
         model_data = b""
-        for chunk in response.iter_content(chunk_size=65536):
+        for chunk in model_response.iter_content(chunk_size=65536):
             if chunk:
                 model_data += chunk
 
-        if len(model_data) < 100000:
-            return jsonify({"error": "Download too small", "size": len(model_data)}), 500
+        # Download scaler
+        scaler_url = "https://huggingface.co/Sravanisravs2125/real-estate-model/resolve/main/scaler.pkl"
+        scaler_response = requests.get(scaler_url, stream=True, timeout=300)
+        scaler_response.raise_for_status()
+        scaler_data = b""
+        for chunk in scaler_response.iter_content(chunk_size=65536):
+            if chunk:
+                scaler_data += chunk
 
+        # Save model to database
         existing_model = MLArtifact.query.filter_by(key="house_price_model.pkl").first()
         if existing_model is None:
             db.session.add(MLArtifact(key="house_price_model.pkl", data=model_data))
         else:
             existing_model.data = model_data
 
+        # Save scaler to database
+        existing_scaler = MLArtifact.query.filter_by(key="scaler.pkl").first()
+        if existing_scaler is None:
+            db.session.add(MLArtifact(key="scaler.pkl", data=scaler_data))
+        else:
+            existing_scaler.data = scaler_data
+
         db.session.commit()
-        return jsonify({"status": "ok", "message": "Model downloaded from Hugging Face", "size": len(model_data)})
+        return jsonify({"status": "ok", "model_size": len(model_data), "scaler_size": len(scaler_data)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 @app.route("/ml/status", methods=["GET"])
 def ml_status():
