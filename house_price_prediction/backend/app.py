@@ -16,19 +16,21 @@ from flask_sqlalchemy import SQLAlchemy
 from sklearn.exceptions import InconsistentVersionWarning
 
 app = Flask(__name__)
-CORS(app)  # Enable cross-origin requests for React frontend
+
+# ✅ FIXED: Updated CORS for production
+CORS(app, resources={r"/*": {"origins": [
+    "https://real-estate-q4sn.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:5000"
+]}})
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent
-# In this workspace we may run as a monorepo:
-#   <project_root>/house_price_prediction/backend/app.py
-# so the frontend `public/` folder may live at <project_root>/public.
 def _detect_repo_root() -> Path:
-    # Prefer the nearest ancestor that contains `public/`.
     for parent in BASE_DIR.parents:
         if (parent / "public").exists():
             return parent
-    # Fallback: the house_price_prediction folder.
     return BASE_DIR.parents[1]
 
 
@@ -49,7 +51,7 @@ MOCK_PROPERTIES_FILE = BASE_DIR / "mock_properties.json"
 def _get_database_url() -> str:
     url = (os.environ.get("DATABASE_URL") or "").strip()
     if url.startswith("postgres://"):
-        url = "postgresql://" + url[len("postgres://") :]
+        url = "postgresql://" + url[len("postgres://"):]
     if not url:
         url = f"sqlite:///{(BASE_DIR / 'app.db').as_posix()}"
     return url
@@ -145,19 +147,16 @@ def _safe_json_load(path: Path | None, default):
 
 
 def _normalize_property_payload(payload: dict) -> dict:
-    # Fix common mojibake for the rupee symbol if present in old mock data.
     for k in ["valuationCost", "price"]:
         v = payload.get(k)
         if isinstance(v, str) and "â‚¹" in v:
             payload[k] = v.replace("â‚¹", "₹")
 
-    # Make images DB-backed via /media keys when they point to /houses.
     for k in ["propertyImage", "videoThumbnail", "image", "thumbnail"]:
         v = payload.get(k)
         if isinstance(v, str) and v.startswith("/houses/"):
             payload[k] = f"/media/{v.lstrip('/')}"
 
-    # If a property has a local video path, also route it through /media.
     for k in ["propertyVideo", "videoUrl"]:
         v = payload.get(k)
         if isinstance(v, str) and v.startswith("/assets/videos/"):
@@ -169,14 +168,12 @@ def _normalize_property_payload(payload: dict) -> dict:
 def _absolute_if_relative_media_url(value: str) -> str:
     if not value.startswith("/"):
         return value
-    # Only rewrite our own API-served content.
     if not (value.startswith("/media/") or value.startswith("/assets/") or value.startswith("/houses/")):
         return value
     return request.url_root.rstrip("/") + value
 
 
 def _rewrite_media_urls(payload: dict) -> dict:
-    # Mutates a copy-safe dict only.
     keys = [
         "propertyImage",
         "videoThumbnail",
@@ -193,7 +190,6 @@ def _rewrite_media_urls(payload: dict) -> dict:
 
 
 def load_ml_artifacts():
-    """Load model + scaler, and raise clear errors if they're missing/mismatched."""
     global model, scaler
     if model is not None and scaler is not None:
         return model, scaler
@@ -206,7 +202,6 @@ def load_ml_artifacts():
             "Seed them once by calling POST /seed/ml/from-files (local) or upload via POST /seed/ml."
         )
 
-    # If the pickle was produced with a different sklearn version, sklearn warns at unpickle time.
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always", InconsistentVersionWarning)
         model = pickle.loads(artifact_model.data)
@@ -412,7 +407,7 @@ def remove_from_wishlist(user_id, property_id):
     return jsonify({"message": "Removed from wishlist", "wishlist": [_rewrite_media_urls(dict(w.payload)) for w in items]})
 
 
-# -------------------- Videos + Blogs (for main React UI) --------------------
+# -------------------- Videos + Blogs --------------------
 
 PUBLIC_DIR = REPO_ROOT / "public"
 VIDEO_DIR = PUBLIC_DIR / "assets" / "videos"
@@ -444,9 +439,8 @@ def load_videos_from_public():
     if not VIDEO_DIR.exists():
         return videos
 
-    # property1.mp4 ... property25.mp4
     for p in sorted(VIDEO_DIR.glob("property*.mp4")):
-        stem = p.stem  # property12
+        stem = p.stem
         try:
             prop_id = int(stem.replace("property", ""))
         except Exception:
@@ -459,7 +453,6 @@ def load_videos_from_public():
         upload_date = None
         try:
             import datetime as _dt
-
             upload_date = _dt.datetime.fromtimestamp(p.stat().st_mtime).date().isoformat()
         except Exception:
             upload_date = None
@@ -538,7 +531,7 @@ def _require_seed_token():
         return
     auth = request.headers.get("Authorization") or ""
     if auth.startswith("Bearer "):
-        auth = auth[len("Bearer ") :]
+        auth = auth[len("Bearer "):]
     if auth.strip() != expected:
         return Response("Unauthorized", status=401)
 
@@ -587,7 +580,6 @@ def get_media(key: str):
     if not range_header:
         return Response(data, mimetype=blob.mime_type, headers={"Content-Length": str(size)})
 
-    # Basic Range: bytes=start-end
     try:
         units, spec = range_header.split("=", 1)
         if units.strip().lower() != "bytes":
@@ -600,7 +592,7 @@ def get_media(key: str):
     except Exception:
         return Response(status=416)
 
-    chunk = data[start : end + 1]
+    chunk = data[start: end + 1]
     headers = {
         "Content-Range": f"bytes {start}-{end}/{size}",
         "Accept-Ranges": "bytes",
@@ -706,15 +698,14 @@ def seed_videos():
     inserted = 0
     for item in items:
         if seeded_from_public:
-            # Make URLs DB-only by pointing to /media/<key>.
             vurl = item.get("videoUrl") or ""
             if isinstance(vurl, str) and vurl.startswith("/assets/videos/"):
-                key = vurl.lstrip("/")  # assets/videos/...
+                key = vurl.lstrip("/")
                 item["videoUrl"] = f"/media/{key}"
 
             thumb = item.get("thumbnail") or ""
             if isinstance(thumb, str) and thumb.startswith("/houses/"):
-                key = thumb.lstrip("/")  # houses/img1.jpg
+                key = thumb.lstrip("/")
                 item["thumbnail"] = f"/media/{key}"
 
         external_id = item.get("_id") or item.get("id")
@@ -853,8 +844,6 @@ def seed_all():
     include_media = str(request.args.get("includeMedia") or "0") in {"1", "true", "yes"}
 
     props = seed_mock_properties()
-
-    # categories + videos + blogs (+ optional media)
     cats = seed_video_categories()
     media = None
     if include_media:
@@ -875,5 +864,7 @@ def seed_all():
     return jsonify(payload)
 
 
+# ✅ FIXED: Production-ready server config
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
