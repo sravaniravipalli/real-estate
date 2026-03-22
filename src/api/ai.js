@@ -3,7 +3,7 @@ import { fetchWithRetry, handleApiError } from "../utils/apiUtils";
 export const generatePropertyInfo = async (promptData) => {
   try {
     const response = await fetchWithRetry(
-      `${import.meta.env.VITE_REACT_API_URL}/openai/generateTextAndImage`,
+      `https://real-estate-production-1eda.up.railway.app/openai/generateTextAndImage`,
       {
         method: "POST",
         headers: {
@@ -25,7 +25,7 @@ export const generatePropertyInfo = async (promptData) => {
 export const fetchProducts = async () => {
   try {
     const response = await fetchWithRetry(
-      `${import.meta.env.VITE_REACT_API_URL}/properties`,
+      `https://real-estate-production-1eda.up.railway.app/properties`,
       {},
       15000 // 15 second timeout
     );
@@ -42,7 +42,7 @@ export const fetchProducts = async () => {
 export const savePropertyToDb = async (propertyData) => {
   try {
     const response = await fetchWithRetry(
-      `${import.meta.env.VITE_REACT_API_URL}/properties`,
+      `https://real-estate-production-1eda.up.railway.app/properties`,
       {
         method: "POST",
         headers: {
@@ -63,7 +63,7 @@ export const savePropertyToDb = async (propertyData) => {
 export const generateSocialMediaPoster = async (featureData) => {
   try {
     const response = await fetchWithRetry(
-      `${import.meta.env.VITE_REACT_API_URL}/openai/generateSocialMediaPoster`,
+      `https://real-estate-production-1eda.up.railway.app/openai/generateSocialMediaPoster`,
       {
         method: "POST",
         headers: {
