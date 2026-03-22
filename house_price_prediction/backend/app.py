@@ -920,47 +920,16 @@ def seed_ml_from_files():
     return jsonify({"seeded": ["house_price_model.pkl", "scaler.pkl"]})
 
 
-# ✅ NEW: Download ML model from Google Drive
+# ✅ NEW: Download ML model from Hugging Face
 @app.route("/seed/ml/from-gdrive", methods=["POST"])
 def seed_ml_from_gdrive():
     unauthorized = _require_seed_token()
     if unauthorized is not None:
         return unauthorized
     try:
-        import re
-        file_id = "11UxplULQwU_hU2F31K97oqIq_yCzdtrE"
-        session = requests.Session()
-
-        # Step 1: Initial request to get confirmation token
-        url = f"https://drive.google.com/uc?export=download&id={file_id}"
-        response = session.get(url, stream=True)
-
-        # Step 2: Extract confirmation token from cookies
-        confirm_token = None
-        for k, v in response.cookies.items():
-            if k.startswith("download_warning"):
-                confirm_token = v
-                break
-
-        # Step 3: Also try extracting from HTML content (newer GDrive format)
-        if not confirm_token:
-            content_preview = response.content[:20000].decode("utf-8", errors="ignore")
-            match = re.search(r'confirm=([0-9A-Za-z_\-]+)', content_preview)
-            if match:
-                confirm_token = match.group(1)
-            # Try UUID format token
-            match2 = re.search(r'"([0-9A-Za-z_\-]{20,})"', content_preview)
-            if not confirm_token and match2:
-                confirm_token = match2.group(1)
-
-        # Step 4: Download with confirmation token
-        if confirm_token:
-            download_url = f"https://drive.google.com/uc?export=download&id={file_id}&confirm={confirm_token}"
-        else:
-            # Try direct download without confirmation
-            download_url = f"https://drive.usercontent.google.com/download?id={file_id}&export=download&authuser=0&confirm=t"
-
-        response = session.get(download_url, stream=True)
+        url = "https://huggingface.co/Sravanisravs2125/real-estate-model/resolve/main/house_price_model.pkl"
+        response = requests.get(url, stream=True, timeout=300)
+        response.raise_for_status()
 
         model_data = b""
         for chunk in response.iter_content(chunk_size=65536):
@@ -968,12 +937,7 @@ def seed_ml_from_gdrive():
                 model_data += chunk
 
         if len(model_data) < 100000:
-            preview = model_data[:300].decode("utf-8", errors="ignore")
-            return jsonify({
-                "error": "Download too small - got HTML instead of model file",
-                "size": len(model_data),
-                "preview": preview
-            }), 500
+            return jsonify({"error": "Download too small", "size": len(model_data)}), 500
 
         existing_model = MLArtifact.query.filter_by(key="house_price_model.pkl").first()
         if existing_model is None:
@@ -982,7 +946,7 @@ def seed_ml_from_gdrive():
             existing_model.data = model_data
 
         db.session.commit()
-        return jsonify({"status": "ok", "message": "Model downloaded from Google Drive", "size": len(model_data)})
+        return jsonify({"status": "ok", "message": "Model downloaded from Hugging Face", "size": len(model_data)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
