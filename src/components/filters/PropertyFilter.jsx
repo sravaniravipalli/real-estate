@@ -3,14 +3,16 @@ import {
   getUniqueLocations,
   filterPropertiesByLocationAndPrice,
   getPriceStatistics,
+  getEffectivePrice,
   formatPrice,
+  MIN_PROPERTY_PRICE_INR,
   recommendProperties,
   predictAvailabilityInLocation,
 } from "api/propertyFilters";
 
 export default function PropertyFilter({ properties = [], onFilterChange }) {
   const [selectedLocation, setSelectedLocation] = useState("All");
-  const [minPrice, setMinPrice] = useState(0);
+  const [minPrice, setMinPrice] = useState(MIN_PROPERTY_PRICE_INR);
   const [maxPrice, setMaxPrice] = useState(600000000);
   const [bedrooms, setBedrooms] = useState("");
   const [showStats, setShowStats] = useState(false);
@@ -86,11 +88,15 @@ export default function PropertyFilter({ properties = [], onFilterChange }) {
           <input
             id="filter-minPrice"
             type="range"
-            min="0"
+            min={MIN_PROPERTY_PRICE_INR}
             max="600000000"
-            step="5000000"
+            step="1000000"
             value={minPrice}
-            onChange={(e) => setMinPrice(parseInt(e.target.value))}
+            onChange={(e) => {
+              const next = parseInt(e.target.value, 10) || MIN_PROPERTY_PRICE_INR;
+              setMinPrice(next);
+              if (next > maxPrice) setMaxPrice(next);
+            }}
             className="w-full"
           />
           <p className="text-xs font-semibold text-[#7C6EE4] mt-1">
@@ -106,11 +112,15 @@ export default function PropertyFilter({ properties = [], onFilterChange }) {
           <input
             id="filter-maxPrice"
             type="range"
-            min="0"
+            min={MIN_PROPERTY_PRICE_INR}
             max="600000000"
-            step="5000000"
+            step="1000000"
             value={maxPrice}
-            onChange={(e) => setMaxPrice(parseInt(e.target.value))}
+            onChange={(e) => {
+              const next = parseInt(e.target.value, 10) || MIN_PROPERTY_PRICE_INR;
+              setMaxPrice(next);
+              if (next < minPrice) setMinPrice(next);
+            }}
             className="w-full"
           />
           <p className="text-xs font-semibold text-[#7C6EE4] mt-1">
@@ -232,7 +242,7 @@ export default function PropertyFilter({ properties = [], onFilterChange }) {
                 </p>
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-[#7C6EE4]">
-                    {prop.valuationCost}
+                    {formatPrice(getEffectivePrice(prop.valuationCost))}
                   </span>
                   <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded">
                     {prop.bedrooms}BHK

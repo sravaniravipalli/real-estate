@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "context/authProvider/AuthProvider";
 import { apiFetch } from "lib/apiClient";
+import { formatPrice, getEffectivePrice } from "api/propertyFilters";
 
 export default function PropertiesCard({ product, setPropertyData }) {
   const { _id, userName, description, propertyImage, valuationCost, location, city } = product;
@@ -8,6 +9,9 @@ export default function PropertiesCard({ product, setPropertyData }) {
 
   const defaultImage = "https://placehold.co/400x300/e2e8f0/64748b?text=No+Image";
   const [wishlisted, setWishlisted] = useState(false);
+  const displayValuationCost = valuationCost
+    ? formatPrice(getEffectivePrice(valuationCost))
+    : formatPrice(0);
 
   // Check localStorage on mount
   useEffect(() => {
@@ -77,7 +81,7 @@ export default function PropertiesCard({ product, setPropertyData }) {
           loading="lazy"
         />
         <div className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">
-          {valuationCost}
+          {displayValuationCost}
         </div>
         <button
           onClick={toggleWishlist}

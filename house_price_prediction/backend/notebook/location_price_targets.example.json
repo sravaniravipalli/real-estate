@@ -1,0 +1,32 @@
+{
+  "as_of": "2026-03-27",
+  "notes": "Fill with your latest market numbers. Values must be in the SAME unit as you want the dataset to end up in (e.g., INR). The script will scale each location's prices to match these targets.",
+  "mode": "median_price",
+  "currency_scale": 1,
+  "targets": {
+    "Beach Road": 5000000,
+    "MVP Colony": 4500000,
+    "Madhurawada": 3800000,
+    "Rushikonda Hills": 4700000,
+    "Gajuwaka": 3200000,
+    "Yendada": 4200000,
+    "Hanumanthawaka": 3600000,
+    "Seethammadhara": 4400000,
+    "Kommadi": 3500000,
+    "Dwaraka Nagar": 4300000,
+    "Bheemunipatnam": 3700000,
+    "Steel Plant Township": 3300000,
+    "Arilova": 3400000,
+    "Pendurthi": 3100000,
+    "Lawson's Bay Colony": 4800000,
+    "Maharanipeta": 4100000,
+    "Marripalem": 3350000,
+    "Gopalapatnam": 3150000,
+    "Waltair Uplands": 4900000,
+    "PM Palem": 3650000,
+    "Thatichetlapalem": 3450000,
+    "Simhachalam": 3050000,
+    "Isukathota": 3550000
+  }
+}
+

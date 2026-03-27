@@ -15,12 +15,16 @@ from flask import Flask, Response, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.exceptions import HTTPException
 from sklearn.exceptions import InconsistentVersionWarning
 from sqlalchemy import text
 
 app = Flask(__name__)
 
 # ✅ FIXED: Allow all origins (fixes mobile CORS issues)
+
+# Bump this when predict response logic changes (helps frontend confirm backend restart)
+PREDICT_API_VERSION = "2026-03-27-monotone-location-v2"
 
 # JWT Configuration
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'your-secret-key')  # Change in production
@@ -33,6 +37,11 @@ def _include_error_detail() -> bool:
 
 @app.errorhandler(Exception)
 def handle_unexpected_error(e):
+    if isinstance(e, HTTPException):
+        payload = {"error": e.name}
+        if e.description:
+            payload["message"] = e.description
+        return jsonify(payload), int(getattr(e, "code", 500) or 500)
     # Keep API responses actionable in production debugging (opt-in).
     app.logger.exception("Unhandled exception")
     payload = {"error": "Internal Server Error"}
@@ -108,6 +117,227 @@ def healthz():
     if migrated is not None:
         payload["users_password_hash_migrated"] = bool(migrated)
     return jsonify(payload), 200
+
+
+@app.route("/", methods=["GET"])
+def index():
+    return jsonify(
+        {
+            "service": "house_price_prediction backend",
+            "status": "ok",
+            "endpoints": {
+                "health": "/healthz",
+                "predict_get": "/predict",
+                "predict_post": "/predict",
+                "openapi": "/openapi.json",
+                "apidocs": "/apidocs",
+                "docs": "/docs",
+            },
+            "predict_payload_example": {
+                "bedrooms": 3,
+                "bathrooms": 2,
+                "livingArea": 2000,
+                "condition": 3,
+                "schoolsNearby": 2,
+                "location": "Beach Road",
+            },
+        }
+    )
+
+
+def _openapi_spec() -> dict:
+    return {
+        "openapi": "3.0.3",
+        "info": {
+            "title": "House Price Prediction API",
+            "version": PREDICT_API_VERSION,
+            "description": "Backend API for price prediction, breakdown, and health checks.",
+        },
+        "servers": [{"url": "/"}],
+        "paths": {
+            "/healthz": {
+                "get": {
+                    "summary": "Health check",
+                    "responses": {
+                        "200": {"description": "OK"},
+                        "500": {"description": "DB not OK"},
+                    },
+                }
+            },
+            "/predict": {
+                "get": {
+                    "summary": "Predict endpoint help",
+                    "responses": {"200": {"description": "Example payload"}},
+                },
+                "post": {
+                    "summary": "Predict price",
+                    "requestBody": {
+                        "required": True,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "bedrooms",
+                                        "bathrooms",
+                                        "livingArea",
+                                        "condition",
+                                        "schoolsNearby",
+                                    ],
+                                    "properties": {
+                                        "location": {"type": "string"},
+                                        "bedrooms": {"type": "number"},
+                                        "bathrooms": {"type": "number"},
+                                        "livingArea": {"type": "number"},
+                                        "condition": {"type": "number"},
+                                        "schoolsNearby": {"type": "number"},
+                                    },
+                                }
+                            }
+                        },
+                    },
+                    "responses": {"200": {"description": "Prediction result"}},
+                },
+            },
+        },
+    }
+
+
+@app.route("/openapi.json", methods=["GET"])
+def openapi_json():
+    return jsonify(_openapi_spec())
+
+
+@app.route("/apidocs", methods=["GET"])
+def apidocs():
+    # Lightweight docs without extra dependencies.
+    return Response(
+        f"""
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>API Docs - House Price Prediction</title>
+    <style>
+      body {{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }}
+      code, pre {{ background: #0b1020; color: #e6e6e6; padding: 2px 6px; border-radius: 6px; }}
+      pre {{ padding: 12px; overflow: auto; }}
+      .row {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }}
+      .card {{ border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }}
+      input, select {{ width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #d1d5db; }}
+      button {{ padding: 10px 14px; border-radius: 10px; border: 0; background: #2563eb; color: white; font-weight: 600; }}
+      button:disabled {{ background: #9ca3af; }}
+      .muted {{ color: #6b7280; }}
+    </style>
+  </head>
+  <body>
+    <h1>House Price Prediction API</h1>
+    <p class="muted">Version: <b>{PREDICT_API_VERSION}</b></p>
+
+    <div class="row">
+      <div class="card">
+        <h2>Endpoints</h2>
+        <ul>
+          <li><code>GET /</code> – this page index (JSON)</li>
+          <li><code>GET /healthz</code> – health</li>
+          <li><code>GET /predict</code> – payload help</li>
+          <li><code>POST /predict</code> – prediction</li>
+          <li><code>GET /openapi.json</code> – OpenAPI spec</li>
+        </ul>
+        <h3>Quick curl</h3>
+        <pre>curl -X POST http://127.0.0.1:5000/predict -H "Content-Type: application/json" -d "{{\\"bedrooms\\":3,\\"bathrooms\\":2,\\"livingArea\\":2000,\\"condition\\":3,\\"schoolsNearby\\":2,\\"location\\":\\"Beach Road\\"}}"</pre>
+      </div>
+
+      <div class="card">
+        <h2>Try /predict</h2>
+        <div style="display:grid; gap: 10px;">
+          <label>Location <input id="loc" value="Beach Road" /></label>
+          <label>Bedrooms <input id="bed" type="number" value="3" min="1" max="10" /></label>
+          <label>Bathrooms <input id="bath" type="number" value="2" min="1" max="10" step="0.5" /></label>
+          <label>Living Area <input id="area" type="number" value="2000" min="500" max="10000" step="100" /></label>
+          <label>Condition <input id="cond" type="number" value="3" min="1" max="5" /></label>
+          <label>Schools Nearby <input id="schools" type="number" value="2" min="0" max="10" /></label>
+          <button id="btn">Predict</button>
+        </div>
+        <h3>Response</h3>
+        <pre id="out">{{}}</pre>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      $("btn").addEventListener("click", async () => {{
+        $("btn").disabled = true;
+        $("out").textContent = "Loading...";
+        try {{
+          const payload = {{
+            location: $("loc").value,
+            bedrooms: Number($("bed").value),
+            bathrooms: Number($("bath").value),
+            livingArea: Number($("area").value),
+            condition: Number($("cond").value),
+            schoolsNearby: Number($("schools").value),
+          }};
+          const res = await fetch("/predict", {{
+            method: "POST",
+            headers: {{ "Content-Type": "application/json" }},
+            body: JSON.stringify(payload),
+          }});
+          const text = await res.text();
+          try {{
+            $("out").textContent = JSON.stringify(JSON.parse(text), null, 2);
+          }} catch {{
+            $("out").textContent = text;
+          }}
+        }} catch (e) {{
+          $("out").textContent = String(e);
+        }} finally {{
+          $("btn").disabled = false;
+        }}
+      }});
+    </script>
+  </body>
+</html>
+""".strip(),
+        mimetype="text/html",
+    )
+
+
+@app.route("/docs", methods=["GET"])
+def docs():
+    # FastAPI-like docs (Swagger UI). Uses CDN assets (internet required in the browser).
+    return Response(
+        """
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Docs - House Price Prediction</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" />
+    <style>
+      body { margin: 0; }
+      .topbar { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+    <script>
+      window.ui = SwaggerUIBundle({
+        url: "/openapi.json",
+        dom_id: "#swagger-ui",
+        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+        layout: "StandaloneLayout",
+      });
+    </script>
+  </body>
+</html>
+""".strip(),
+        mimetype="text/html",
+    )
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -318,27 +548,284 @@ def load_ml_artifacts():
 
     artifact_model = MLArtifact.query.filter_by(key="house_price_model.pkl").first()
     artifact_scaler = MLArtifact.query.filter_by(key="scaler.pkl").first()
-    if artifact_model is None or artifact_scaler is None:
-        raise FileNotFoundError(
-            "Missing ML artifacts in database. "
-            "Seed them once by calling POST /seed/ml/from-files (local) or upload via POST /seed/ml."
-        )
+    file_model = MODEL_DIR / "house_price_model.pkl"
+    file_scaler = MODEL_DIR / "scaler.pkl"
 
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always", InconsistentVersionWarning)
-        model = pickle.loads(artifact_model.data)
-        scaler = pickle.loads(artifact_scaler.data)
+    force_files = str(os.environ.get("FORCE_FILE_ARTIFACTS") or "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
 
-    if any(isinstance(w.message, InconsistentVersionWarning) for w in caught):
-        meta = _safe_json_load(MODEL_METADATA_FILE, {})
-        trained_with = meta.get("sklearn_version", "unknown")
-        raise RuntimeError(
-            "Model artifacts were created with a different scikit-learn version. "
-            f"Runtime sklearn={sklearn.__version__}, model sklearn={trained_with}. "
-            f"Regenerate pickles: python {BASE_DIR / 'train_and_export.py'}"
-        )
+    disk_available = file_model.exists() and file_scaler.exists()
+    db_available = artifact_model is not None and artifact_scaler is not None
 
-    return model, scaler
+    prefer_disk = force_files
+    if disk_available and db_available and not force_files:
+        try:
+            disk_time = max(
+                datetime.utcfromtimestamp(file_model.stat().st_mtime),
+                datetime.utcfromtimestamp(file_scaler.stat().st_mtime),
+            )
+            db_time = min(artifact_model.created_at, artifact_scaler.created_at)
+            prefer_disk = disk_time > db_time
+        except Exception:
+            prefer_disk = False
+
+    if prefer_disk and disk_available:
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", InconsistentVersionWarning)
+            with open(file_model, "rb") as f:
+                model = pickle.load(f)
+            with open(file_scaler, "rb") as f:
+                scaler = pickle.load(f)
+
+        if any(isinstance(w.message, InconsistentVersionWarning) for w in caught):
+            meta = _safe_json_load(MODEL_METADATA_FILE, {})
+            trained_with = meta.get("sklearn_version", "unknown")
+            raise RuntimeError(
+                "Model artifacts were created with a different scikit-learn version. "
+                f"Runtime sklearn={sklearn.__version__}, model sklearn={trained_with}. "
+                f"Regenerate pickles: python {BASE_DIR / 'train_and_export.py'}"
+            )
+
+        return model, scaler
+
+    if db_available:
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", InconsistentVersionWarning)
+            model = pickle.loads(artifact_model.data)
+            scaler = pickle.loads(artifact_scaler.data)
+
+        if any(isinstance(w.message, InconsistentVersionWarning) for w in caught):
+            meta = _safe_json_load(MODEL_METADATA_FILE, {})
+            trained_with = meta.get("sklearn_version", "unknown")
+            raise RuntimeError(
+                "Model artifacts were created with a different scikit-learn version. "
+                f"Runtime sklearn={sklearn.__version__}, model sklearn={trained_with}. "
+                f"Regenerate pickles: python {BASE_DIR / 'train_and_export.py'}"
+            )
+
+        return model, scaler
+
+    if disk_available:
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", InconsistentVersionWarning)
+            with open(file_model, "rb") as f:
+                model = pickle.load(f)
+            with open(file_scaler, "rb") as f:
+                scaler = pickle.load(f)
+
+        if any(isinstance(w.message, InconsistentVersionWarning) for w in caught):
+            meta = _safe_json_load(MODEL_METADATA_FILE, {})
+            trained_with = meta.get("sklearn_version", "unknown")
+            raise RuntimeError(
+                "Model artifacts were created with a different scikit-learn version. "
+                f"Runtime sklearn={sklearn.__version__}, model sklearn={trained_with}. "
+                f"Regenerate pickles: python {BASE_DIR / 'train_and_export.py'}"
+            )
+
+        return model, scaler
+
+    raise FileNotFoundError(
+        "Missing ML artifacts in database and on disk. "
+        "Generate them: python backend/train_and_export.py "
+        "Then seed DB: POST /seed/ml/from-files (local) or upload via POST /seed/ml."
+    )
+
+
+def _inr_breakdown(amount) -> dict:
+    value = int(round(float(amount or 0)))
+    crores, remainder = divmod(value, 10_000_000)
+    lakhs, remainder = divmod(remainder, 100_000)
+    thousands, rupees = divmod(remainder, 1_000)
+    return {
+        "crores": crores,
+        "lakhs": lakhs,
+        "thousands": thousands,
+        "rupees": rupees,
+    }
+
+
+def _format_inr(amount) -> str:
+    value = int(round(float(amount or 0)))
+    sign = "-" if value < 0 else ""
+    digits = str(abs(value))
+    if len(digits) <= 3:
+        return f"{sign}\u20B9{digits}"
+
+    last3 = digits[-3:]
+    rest = digits[:-3]
+    parts = []
+    while len(rest) > 2:
+        parts.append(rest[-2:])
+        rest = rest[:-2]
+    if rest:
+        parts.append(rest)
+    parts.reverse()
+    return f"{sign}\u20B9{','.join(parts)},{last3}"
+
+
+_COST_BREAKDOWN_WEIGHTS = [
+    ("Land Cost", 0.50),
+    ("Construction Cost", 0.30),
+    ("Registration Charges", 0.06),
+    ("Interior", 0.08),
+    ("Utilities", 0.02),
+    ("Amenities", 0.03),
+]
+
+_LOCATION_PREMIUM_MULTIPLIERS = {
+    "Beach Road": 1.25,
+    "Lawson's Bay Colony": 1.22,
+    "Waltair Uplands": 1.20,
+    "Rushikonda Hills": 1.18,
+    "MVP Colony": 1.15,
+    "Dwaraka Nagar": 1.12,
+    "Seethammadhara": 1.10,
+    "Maharanipeta": 1.08,
+    "Madhurawada": 1.06,
+    "Yendada": 1.06,
+    "PM Palem": 1.05,
+    "Kommadi": 1.04,
+    "Hanumanthawaka": 1.03,
+    "Isukathota": 1.03,
+    "Arilova": 1.02,
+    "Marripalem": 1.01,
+    "Bheemunipatnam": 1.04,
+    "Simhachalam": 0.98,
+    "Pendurthi": 0.97,
+    "Gopalapatnam": 0.97,
+    "Gajuwaka": 0.95,
+    "Steel Plant Township": 0.96,
+    "Thatichetlapalem": 0.99,
+}
+
+
+def _normalize_location(value) -> str:
+    return " ".join(str(value or "").strip().split())
+
+
+def _location_multiplier(location: str) -> float:
+    loc = _normalize_location(location)
+    if not loc:
+        return 1.0
+    if loc in _LOCATION_PREMIUM_MULTIPLIERS:
+        return float(_LOCATION_PREMIUM_MULTIPLIERS[loc])
+    for k, v in _LOCATION_PREMIUM_MULTIPLIERS.items():
+        if k.lower() == loc.lower():
+            return float(v)
+    return 1.0
+
+
+_STRICT_PREMIUMS = {
+    "per_bedroom": 10_000,
+    "per_bathroom": 7_000,
+    "per_sqft_over_500": 20,
+    "per_condition_step": 25_000,
+    "per_school": 5_000,
+}
+
+
+def _strict_increase_adjustment(bedrooms, bathrooms, living_area, condition, schools_nearby, loc_multiplier: float) -> int:
+    """
+    Adds a small, always-positive premium per feature so the final displayed price
+    strictly increases when any of these inputs increase (holding others constant).
+    """
+    b = max(1, int(round(float(bedrooms))))
+    ba = max(1.0, float(bathrooms))
+    la = max(0, int(round(float(living_area))))
+    c = max(1, int(round(float(condition))))
+    sn = max(0, int(round(float(schools_nearby))))
+
+    adj = 0.0
+    adj += (b - 1) * float(_STRICT_PREMIUMS["per_bedroom"])
+    adj += (ba - 1.0) * float(_STRICT_PREMIUMS["per_bathroom"])
+    adj += max(0, la - 500) * float(_STRICT_PREMIUMS["per_sqft_over_500"])
+    adj += (c - 1) * float(_STRICT_PREMIUMS["per_condition_step"])
+    adj += sn * float(_STRICT_PREMIUMS["per_school"])
+
+    adj *= float(loc_multiplier or 1.0)
+    return int(round(adj))
+
+
+def _monotone_max_prediction(
+    m,
+    s,
+    bedrooms,
+    bathrooms,
+    living_area,
+    condition,
+    schools_nearby,
+    location_multiplier: float | None = None,
+) -> tuple[float, int]:
+    """
+    Enforce monotonicity (non-decreasing) w.r.t. all input features by taking
+    the maximum model prediction over a hyper-rectangle of points where each
+    feature is <= the requested feature.
+
+    Returns (max_prediction, evaluated_points_count).
+    """
+    b = int(round(float(bedrooms)))
+    ba = float(bathrooms)
+    la = int(round(float(living_area)))
+    c = int(round(float(condition)))
+    sn = int(round(float(schools_nearby)))
+
+    b = max(1, min(10, b))
+    ba = max(1.0, min(10.0, ba))
+    la = max(500, min(10000, la))
+    c = max(1, min(5, c))
+    sn = max(0, min(10, sn))
+
+    bedroom_vals = np.arange(1, b + 1, 1, dtype=float)
+
+    bath_step = 0.5 if abs(ba - round(ba)) > 1e-9 else 1.0
+    bathroom_vals = np.arange(1.0, ba + 1e-9, bath_step, dtype=float)
+    if bathroom_vals.size == 0 or abs(float(bathroom_vals[-1]) - ba) > 1e-9:
+        bathroom_vals = np.unique(np.append(bathroom_vals, ba))
+
+    area_step = 250
+    living_vals = np.arange(500, la + 1, area_step, dtype=float)
+    if living_vals.size == 0 or int(round(float(living_vals[-1]))) != la:
+        living_vals = np.unique(np.append(living_vals, float(la)))
+
+    condition_vals = np.arange(1, c + 1, 1, dtype=float)
+    schools_vals = np.arange(0, sn + 1, 1, dtype=float)
+
+    grids = np.meshgrid(
+        bedroom_vals, bathroom_vals, living_vals, condition_vals, schools_vals, indexing="ij"
+    )
+    combos = np.stack([g.ravel() for g in grids], axis=1)
+    if combos.size == 0:
+        combos = np.array([[b, ba, la, c, sn]], dtype=float)
+
+    if location_multiplier is not None:
+        lm = float(location_multiplier)
+        combos = np.hstack([combos, np.full((combos.shape[0], 1), lm, dtype=float)])
+
+    scaled = s.transform(combos)
+    preds = m.predict(scaled)
+    return float(np.max(preds)), int(preds.shape[0])
+
+
+def _allocate_cost_breakdown(total_amount) -> list[dict]:
+    total = int(round(float(total_amount or 0)))
+    if total < 0:
+        total = 0
+
+    items = []
+    allocated = 0
+    for label, weight in _COST_BREAKDOWN_WEIGHTS:
+        amount = int(round(total * float(weight)))
+        allocated += amount
+        items.append({"component": label, "amount": amount, "formatted": _format_inr(amount)})
+
+    misc_amount = max(0, total - allocated)
+    items.append(
+        {"component": "Miscellaneous", "amount": misc_amount, "formatted": _format_inr(misc_amount)}
+    )
+    return items
 
 
 def load_wishlist():
@@ -535,20 +1022,81 @@ def predict():
 
     try:
         m, s = load_ml_artifacts()
-        features = np.array(
-            [
-                [
-                    float(data["bedrooms"]),
-                    float(data["bathrooms"]),
-                    float(data["livingArea"]),
-                    float(data["condition"]),
-                    float(data["schoolsNearby"]),
-                ]
-            ]
-        )
+        location = data.get("location") or ""
+
+        expected_features = int(getattr(s, "n_features_in_", 5) or 5)
+        loc_multiplier = _location_multiplier(location)
+
+        # 5-feature scaler: legacy model (location applied as post-multiplier)
+        # 6-feature scaler: model includes `location_multiplier` as a feature (no extra post-multiplier)
+        uses_location_feature = expected_features >= 6
+
+        base_vector = [
+            float(data["bedrooms"]),
+            float(data["bathrooms"]),
+            float(data["livingArea"]),
+            float(data["condition"]),
+            float(data["schoolsNearby"]),
+        ]
+        if uses_location_feature:
+            base_vector.append(float(loc_multiplier))
+
+        features = np.array([base_vector], dtype=float)
         scaled_features = s.transform(features)
-        prediction = float(m.predict(scaled_features)[0])
-        return jsonify({"predicted_price": prediction * 9})
+        raw_prediction = float(m.predict(scaled_features)[0])
+
+        monotone_prediction, evaluated_points = _monotone_max_prediction(
+            m,
+            s,
+            data["bedrooms"],
+            data["bathrooms"],
+            data["livingArea"],
+            data["condition"],
+            data["schoolsNearby"],
+            loc_multiplier if uses_location_feature else None,
+        )
+        base_predicted_price = int(round(monotone_prediction * 9))
+
+        if uses_location_feature:
+            predicted_price = base_predicted_price
+            source = "ml+location-feature"
+        else:
+            predicted_price = int(round(base_predicted_price * float(loc_multiplier)))
+            source = "ml+legacy"
+
+        strict_adj = _strict_increase_adjustment(
+            data["bedrooms"],
+            data["bathrooms"],
+            data["livingArea"],
+            data["condition"],
+            data["schoolsNearby"],
+            loc_multiplier,
+        )
+        final_predicted_price = int(round(predicted_price + strict_adj))
+
+        return jsonify(
+            {
+                "source": source,
+                "api_version": PREDICT_API_VERSION,
+                "raw_prediction": raw_prediction,
+                "raw_predicted_price": int(round(raw_prediction * 9)),
+                "monotone_prediction": monotone_prediction,
+                "monotone_points_evaluated": evaluated_points,
+                "predicted_price_ml": predicted_price,
+                "predicted_price_ml_formatted": _format_inr(predicted_price),
+                "strict_increase_adjustment": strict_adj,
+                "predicted_price": final_predicted_price,
+                "predicted_price_formatted": _format_inr(final_predicted_price),
+                "price_breakdown": _inr_breakdown(final_predicted_price),
+                "cost_breakdown": _allocate_cost_breakdown(final_predicted_price),
+                "total_cost": final_predicted_price,
+                "total_cost_formatted": _format_inr(final_predicted_price),
+                "base_predicted_price": base_predicted_price,
+                "base_predicted_price_formatted": _format_inr(base_predicted_price),
+                "location": _normalize_location(location),
+                "location_multiplier": loc_multiplier,
+            }
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

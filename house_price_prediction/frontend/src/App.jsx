@@ -14,7 +14,7 @@ const App = () => {
         setError(null);
         try {
             const response = await axios.post('http://localhost:5000/predict', inputs);
-            setPrice(response.data.predicted_price);
+            setPrice(response.data);
         } catch (error) {
             console.error("Error fetching prediction:", error);
             setError("An error occurred while fetching the prediction. Please try again.");

@@ -1,13 +1,15 @@
 {
-  "created_at_utc": "2026-03-22T09:37:48.393749+00:00",
+  "created_at_utc": "2026-03-27T16:32:21.357270+00:00",
   "sklearn_version": "1.8.0",
   "features": [
     "number of bedrooms",
     "number of bathrooms",
     "living area",
     "condition of the house",
-    "Number of schools nearby"
+    "Number of schools nearby",
+    "location_multiplier"
   ],
   "target": "Price",
-  "model_type": "RandomForestRegressor"
+  "model_type": "RandomForestRegressor",
+  "dataset_path": "C:\\Users\\Hello\\real-estate\\house_price_prediction\\backend\\notebook\\house_data_with_location_latest.csv"
 }

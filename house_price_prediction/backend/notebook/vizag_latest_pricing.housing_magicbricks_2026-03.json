@@ -1,0 +1,51 @@
+{
+  "as_of": "2026-03-27",
+  "currency": "INR",
+  "notes": "Network access to 99acres is blocked in this environment, so these are proxy 'price per sq ft' rates compiled from publicly available locality trend pages (e.g., Housing.com) plus a couple fallback locality rates (e.g., MagicBricks). Update these numbers if you have a newer/official source.",
+  "source_notes": {
+    "primary": "Housing.com locality price trends (avg price per sq ft)",
+    "fallbacks": [
+      "MagicBricks locality rate snapshots (used where trends were missing)"
+    ]
+  },
+  "base_rate_per_sqft": {
+    "Arilova": 6494,
+    "Beach Road": 7410,
+    "Bheemunipatnam": 5600,
+    "Dwaraka Nagar": 9531,
+    "Gajuwaka": 4355,
+    "Gopalapatnam": 4600,
+    "Hanumanthawaka": 4498,
+    "Isukathota": 7002,
+    "Kommadi": 4581,
+    "Lawson's Bay Colony": 8716,
+    "Madhurawada": 5001,
+    "Maharanipeta": 7527,
+    "Marripalem": 6000,
+    "MVP Colony": 7837,
+    "Pendurthi": 4113,
+    "PM Palem": 4882,
+    "Rushikonda Hills": 6413,
+    "Seethammadhara": 7695,
+    "Simhachalam": 4800,
+    "Steel Plant Township": 4340,
+    "Thatichetlapalem": 5788,
+    "Waltair Uplands": 11500,
+    "Yendada": 6513
+  },
+  "premiums": {
+    "bedroom": 250000,
+    "bathroom": 150000,
+    "school_nearby": 50000
+  },
+  "condition_multiplier": {
+    "1": 0.85,
+    "2": 0.93,
+    "3": 1.0,
+    "4": 1.08,
+    "5": 1.18
+  },
+  "noise_pct": 0.0,
+  "min_price": 6000000,
+  "max_price": 125000000
+}

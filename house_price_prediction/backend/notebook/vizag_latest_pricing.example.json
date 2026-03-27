@@ -1,0 +1,46 @@
+{
+  "as_of": "2026-03-27",
+  "currency": "INR",
+  "notes": "Fill these with your latest REAL Vizag market rates (typically price-per-sqft) per location. The script will recompute each row's Price using: living area, bedrooms, bathrooms, schoolsNearby, and condition.",
+  "base_rate_per_sqft": {
+    "Beach Road": 12000,
+    "MVP Colony": 11000,
+    "Madhurawada": 8500,
+    "Rushikonda Hills": 11500,
+    "Gajuwaka": 7500,
+    "Yendada": 9500,
+    "Hanumanthawaka": 8000,
+    "Seethammadhara": 10500,
+    "Kommadi": 7800,
+    "Dwaraka Nagar": 10000,
+    "Bheemunipatnam": 8200,
+    "Steel Plant Township": 7600,
+    "Arilova": 7900,
+    "Pendurthi": 7200,
+    "Lawson's Bay Colony": 11800,
+    "Maharanipeta": 9800,
+    "Marripalem": 8300,
+    "Gopalapatnam": 7400,
+    "Waltair Uplands": 12500,
+    "PM Palem": 8600,
+    "Thatichetlapalem": 8000,
+    "Simhachalam": 7000,
+    "Isukathota": 8800
+  },
+  "premiums": {
+    "bedroom": 250000,
+    "bathroom": 150000,
+    "school_nearby": 50000
+  },
+  "condition_multiplier": {
+    "1": 0.85,
+    "2": 0.93,
+    "3": 1.0,
+    "4": 1.08,
+    "5": 1.18
+  },
+  "noise_pct": 0.04,
+  "min_price": 1500000,
+  "max_price": 75000000
+}
+
